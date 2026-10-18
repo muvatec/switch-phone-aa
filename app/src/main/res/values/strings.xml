@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Switch Phone</string>
+    <string name="shortcut_short">Usar este celular</string>
+    <string name="shortcut_long">Usar este celular en el carro</string>
+</resources>
