@@ -349,7 +349,12 @@ private fun DongleCard(s: DongleState) {
                 Spacer(Modifier.size(8.dp))
                 Text("Dongle conectado", color = Color.White.copy(alpha = .9f), style = MaterialTheme.typography.labelLarge)
             }
-            Text(s.product.replace("_AUTOKIT", "").ifBlank { "Dongle" }, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            // Title: the name the owner gave the dongle; then the car it reports; then what the hardware is.
+            Text(s.boxName.ifBlank { "Mi dongle" }, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            val car = listOf(s.carInfo.brand, s.carInfo.model, s.carInfo.year.takeIf { it > 0 }?.toString()).filterNotNull().filter { it.isNotBlank() }.joinToString(" ")
+            Text(if (car.isBlank()) "Carro sin configurar (Herramientas → Datos del carro)" else car,
+                color = Color.White.copy(alpha = .95f), style = MaterialTheme.typography.titleSmall)
+            Text("Carlinkit 5.0 · ${s.product.removeSuffix("_AUTOKIT")}", color = Color.White.copy(alpha = .75f), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 Meta(Icons.Filled.Bluetooth, s.btName)
                 Meta(Icons.Filled.Wifi, s.wifiName)

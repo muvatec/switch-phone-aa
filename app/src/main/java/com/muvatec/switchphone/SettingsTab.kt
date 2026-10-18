@@ -93,8 +93,6 @@ fun SettingsTab(c: Ctl, aggressive: Boolean, onAggressive: (Boolean) -> Unit) {
         val connection = listOfNotNull(
             sw("fastConnect", "Conexión rápida", "Reconecta más rápido al subir al carro"),
             sw("autoConn", "Conectar automáticamente", "El dongle busca un celular al encender"),
-            sw("syncMode", "Sincronizar hora", "El dongle toma la hora del celular"),
-            sw("bgMode", "Modo segundo plano", "Mantiene Android Auto activo en segundo plano"),
             choice("returnMode", "Al salir de Android Auto", "A qué pantalla vuelve el carro", listOf(0 to "Carro original", 1 to "Dongle")),
             slider("startDelay", "Retardo de arranque", "Espera antes de iniciar la conexión", 0, 120, 5, " s", "sin retardo"),
             choice("carLinkType", "Tipo de enlace con el carro", "Cómo se presenta el dongle al carro", listOf(30 to "Automático", 2 to "CarPlay", 4 to "Android Auto")),
@@ -105,7 +103,6 @@ fun SettingsTab(c: Ctl, aggressive: Boolean, onAggressive: (Boolean) -> Unit) {
         // ---- Audio -------------------------------------------------------------------------------
         val audio = listOfNotNull(
             slider("mediaDelay", "Retardo de audio", "Menos = más reactivo, más = más estable", 300, 2000, 100, " ms"),
-            sw("mediaSound", "Sonido multimedia", "Reproduce el audio por el carro"),
             choice("CallQuality", "Calidad de llamada", "", listOf(0 to "Normal", 1 to "Clara", 2 to "HD")),
             choice("NaviAudio", "Audio de navegación", "Canal que usan las indicaciones", listOf(0 to "Navegación", 1 to "Voz", 2 to "Multimedia")),
             slider("naviVolume", "Volumen de navegación", "", 0, 100, 5, "%"),
@@ -140,16 +137,32 @@ fun SettingsTab(c: Ctl, aggressive: Boolean, onAggressive: (Boolean) -> Unit) {
             slider("fps", "Cuadros por segundo", "", 0, 60, 5, " fps", "automático"),
             slider("ScreenDPI", "DPI de pantalla", "Tamaño de la interfaz", 0, 480, 10, "", "predeterminado"),
             choice("displaySize", "Tamaño de iconos", "", listOf(0 to "Predeterminado", 1 to "Pequeño", 2 to "Mediano", 3 to "Grande")),
+            sw("gps", "GPS del dongle (GNSS)", "Comparte la ubicación con el carro"),
+        )
+        if (video.isNotEmpty()) { if (!has("resolutionWidth")) item { SectionTitle("Video") }; item { Group(video) } }
+
+        // ---- Experimental ------------------------------------------------------------------------
+        // The firmware exposes these but their visible effect depends on the car and on CarPlay vs Android Auto.
+        val experimental = listOfNotNull(
+            sw("mediaSound", "Sonido multimedia", "Categoría de audio multimedia del dongle"),
+            sw("squareCorner", "Esquinas cuadradas", "Solo afecta a la imagen en CarPlay / pantallas que lo usan"),
+            sw("bgMode", "Modo segundo plano", "Comportamiento al volver a la pantalla del carro"),
+            sw("syncMode", "Sincronizar hora", "El dongle toma la hora del celular"),
             choice("autoDisplay", "Modo de pantalla", "", listOf(0 to "Normal", 1 to "Vehículo")),
             choice("transMode", "Modo de transferencia", "", listOf(0 to "Normal", 1 to "Compatible")),
-            sw("squareCorner", "Esquinas cuadradas", "Quita las esquinas redondeadas"),
             sw("autoRefresh", "Refresco automático", ""),
             sw("mouseMode", "Modo ratón", ""),
             sw("KnobMode", "Modo perilla", ""),
             sw("backRecording", "Grabación en segundo plano", ""),
-            sw("gps", "GPS del dongle (GNSS)", "Comparte la ubicación con el carro"),
         )
-        if (video.isNotEmpty()) { if (!has("resolutionWidth")) item { SectionTitle("Video") }; item { Group(video) } }
+        if (experimental.isNotEmpty()) {
+            item { SectionTitle("Experimentales") }
+            item {
+                Text("Los expone el firmware, pero no siempre se nota algo al cambiarlos (depende del carro y de si usas CarPlay o Android Auto). Si no ves efecto, déjalos como estaban.",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
+            }
+            item { Group(experimental) }
+        }
 
         // ---- WiFi --------------------------------------------------------------------------------
         if (has("wifiChannel")) {

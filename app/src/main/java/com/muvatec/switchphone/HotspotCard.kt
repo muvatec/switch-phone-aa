@@ -47,6 +47,10 @@ fun HotspotCard(c: Ctl) {
     }
 
     SoftCard {
+        Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
+            Text("Estos datos se guardan solos en la app (no hay botón Guardar).", fontWeight = FontWeight.SemiBold)
+            Text("Pero NO cambian el hotspot del celular: eso lo decide Android.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
         SettingRow("Recordarme al conectar Android Auto", "Agrega el botón Hotspot a la notificación \"Conectado al carro\"", remind) {
             remind = it; Prefs.setHotspotRemind(ctx, it)
         }

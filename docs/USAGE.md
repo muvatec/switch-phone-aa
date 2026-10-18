@@ -65,6 +65,7 @@ Solo aparecen los ajustes que **tu firmware** reporta (como en la web del dongle
 | | Retardo de arranque (0–120 s) | |
 | | Tipo de enlace | Automático / CarPlay / Android Auto |
 | | Actualizar firmware automáticamente | El dongle puede cambiar de versión solo |
+| Experimentales | Sonido multimedia, esquinas cuadradas, segundo plano, sincronizar hora, modo de pantalla, modo de transferencia, refresco, ratón, perilla, grabación | El firmware los expone pero **no siempre tienen efecto visible** (depende del carro y de CarPlay vs Android Auto). Si no notas nada, déjalos como estaban |
 | Audio | Retardo de audio (300–2000 ms) | Menos = más reactivo, más = más estable |
 | | Sonido multimedia, calidad de llamada (Normal/Clara/HD) | |
 | | Audio y volumen de navegación (0–100) | |
