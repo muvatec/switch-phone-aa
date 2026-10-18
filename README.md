@@ -54,12 +54,14 @@ Cada push a `main` ejecuta [`.github/workflows/release.yml`](.github/workflows/r
 | [docs/RESEARCH.md](docs/RESEARCH.md) | Cómo funciona el dongle por dentro (USB, AOA, firmware) |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Compilar, probar con DHU, CI, firma |
 | [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | Qué no se puede hacer y por qué |
+| [docs/FIRMWARE.md](docs/FIRMWARE.md) | Versiones de firmware vistas, cambios entre ellas, cómo se actualiza |
+| [docs/CONTEXT.md](docs/CONTEXT.md) | Historia del proyecto, decisiones, errores ya resueltos, pendientes |
 
 ## Estructura
 
 ```
 app/            app Android (Kotlin, Compose, Car App Library)
-docs/           documentación
+docs/           documentación (y muestras sanitizadas de firmware en docs/firmware/)
 tools/          scripts: API del dongle por terminal, emulador de carro (DHU)
 .github/        CI de releases
 ```

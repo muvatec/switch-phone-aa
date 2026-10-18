@@ -1,0 +1,219 @@
+{
+  "CarInfo": {
+    "brand": "",
+    "model": "",
+    "userid": "",
+    "year": 0,
+    "screen": "0x0",
+    "gnss": "",
+    "screenFps": "0",
+    "screenSize": "0x0",
+    "huid": ""
+  },
+  "BoxInfo": {
+    "bt": "AutoKit_xxx",
+    "wifi": "AutoKit_xx",
+    "boxName": "AutoKit",
+    "MDLinkType": "",
+    "HULinkType": "",
+    "MDModel": "",
+    "MDOSVersion": "",
+    "MDLinkVersion": "",
+    "hardwareVer": "YMYE-WB58-0104",
+    "ver": "2024.03.21.1830",
+    "cgiVer": "Feb 19 2024 14:29:29",
+    "mfd": "20240321",
+    "productType": "U2AC_AUTOKIT",
+    "wifiChipType": 4,
+    "customVer": 2,
+    "customCode": "",
+    "platformType": "M6",
+    "fileName": "U2AC_AUTOKIT_Update.img",
+    "boxType": "YU",
+    "logFileSuffix": "YU2AC",
+    "tabId": "10",
+    "needActive": 0
+  },
+  "Settings": {
+    "fps": 0,
+    "gps": 1,
+    "lang": 0,
+    "bgMode": 0,
+    "syncMode": 0,
+    "startDelay": 0,
+    "mediaDelay": 1000,
+    "mediaSound": 1,
+    "autoConn": 1,
+    "echoDelay": 320,
+    "btCall": 0,
+    "micGain": 0,
+    "autoRefresh": 0,
+    "displaySize": 0,
+    "autoPlay": 0,
+    "mouseMode": 1,
+    "Udisk": 1,
+    "bitRate": 0,
+    "resolutionWidth": 0,
+    "resolutionHeight": 0,
+    "ScreenDPI": 0,
+    "KnobMode": 0,
+    "NaviAudio": 0,
+    "CallQuality": 1,
+    "autoUpdate": 1,
+    "wifi5GSwitch": 1,
+    "wifiChannel": 36,
+    "carLinkType": 30,
+    "RepeatKeyFrame": 0,
+    "BtAudio": 0,
+    "MicMode": 0,
+    "SpsPpsMode": 0,
+    "MediaPacketLen": 200,
+    "TtsPacketLen": 200,
+    "VrPacketLen": 200,
+    "TtsVolumGain": 0,
+    "VrVolumGain": 0,
+    "heartBeat": 1,
+    "emptyFrame": 1,
+    "micType": 0,
+    "autoDisplay": 1,
+    "connectedMode": 1,
+    "transMode": 0,
+    "returnMode": 0,
+    "backRecording": 0,
+    "fastConnect": 0
+  },
+  "DevList": [],
+  "WifiChannelList": [
+    {
+      "id": 1,
+      "wifiFreq": 2412
+    },
+    {
+      "id": 2,
+      "wifiFreq": 2417
+    },
+    {
+      "id": 3,
+      "wifiFreq": 2422
+    },
+    {
+      "id": 4,
+      "wifiFreq": 2427
+    },
+    {
+      "id": 5,
+      "wifiFreq": 2432
+    },
+    {
+      "id": 6,
+      "wifiFreq": 2437
+    },
+    {
+      "id": 7,
+      "wifiFreq": 2442
+    },
+    {
+      "id": 8,
+      "wifiFreq": 2447
+    },
+    {
+      "id": 10,
+      "wifiFreq": 2457
+    },
+    {
+      "id": 11,
+      "wifiFreq": 2462
+    },
+    {
+      "id": 13,
+      "wifiFreq": 2472
+    },
+    {
+      "id": 36,
+      "wifiFreq": 5180
+    },
+    {
+      "id": 40,
+      "wifiFreq": 5200
+    },
+    {
+      "id": 44,
+      "wifiFreq": 5220
+    },
+    {
+      "id": 48,
+      "wifiFreq": 5240
+    },
+    {
+      "id": 149,
+      "wifiFreq": 5745
+    },
+    {
+      "id": 153,
+      "wifiFreq": 5765
+    },
+    {
+      "id": 157,
+      "wifiFreq": 5785
+    },
+    {
+      "id": 161,
+      "wifiFreq": 5805
+    },
+    {
+      "id": 165,
+      "wifiFreq": 5825
+    }
+  ],
+  "ModuleInfo": [
+    {
+      "name": "Boot128",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "USBDrv",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "Common",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "Service",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "Upg",
+      "version": "0000.00.00.0000"
+    },
+    {
+      "name": "HUCP",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "HUAA",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "CarPlay",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "AndroidAuto",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "BCM4358",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "WebAUTOKIT",
+      "version": "2024.03.21.1830"
+    },
+    {
+      "name": "Cus_U2AC_AUTOKIT",
+      "version": "2024.03.21.1830"
+    }
+  ],
+  "_note": "Sanitized sample: uuid, mac, activation code and saved phones removed."
+}
