@@ -77,22 +77,6 @@ Solo aparecen los ajustes que **tu firmware** reporta (como en la web del dongle
 | Esta app | Aceptar solicitudes automáticamente | El celular activo cede sin preguntar. **Apagado por defecto** |
 | | Cambio agresivo | Al cambiar, olvida el celular actual; hay que volver a emparejarlo |
 
-## Internet para pasajeros
-
-En **Ajustes → Internet para pasajeros** configuras los datos de la red que quieres compartir:
-
-| Campo | Detalle |
-|---|---|
-| Nombre de la red | Hasta 32 caracteres |
-| Seguridad | **Con contraseña (WPA2)** o **Abierta** (cualquiera cerca usaría tus datos móviles) |
-| Contraseña | 8 a 63 caracteres; botón para generar una |
-| Código QR | Los pasajeros lo escanean con la cámara y se unen |
-| Recordarme al conectar Android Auto | Añade el botón **Hotspot** a la notificación "Conectado al carro" |
-
-**Importante:** Android **no permite que una app normal encienda el hotspot ni cambie su nombre o clave**. Por eso la app guarda los datos, muestra el QR y abre la pantalla del hotspot con un toque, pero tú configuras **una vez** esos mismos datos en *Ajustes → Hotspot* del celular. Después, activarlo es un toque (notificación, panel rápido de Android o el botón **Abrir ajustes del hotspot**). Los celulares con WiFi cliente + hotspot simultáneos (por ejemplo los Pixel recientes) lo mantienen a la vez que Android Auto.
-
-Para hacerlo 100 % automático hace falta acceso privilegiado (Shizuku o root); ver [LIMITATIONS.md](LIMITATIONS.md).
-
 ## Monitor
 
 Lee `BoxMonitor` cada 2 s y lo muestra en **gráficas de torta (donut)**: CPU, memoria, temperatura (escala 0–100 °C) y WiFi (recibido vs enviado). Colores: verde < 60 °C, ámbar 60–75 °C, rojo ≥ 75 °C; CPU y memoria cambian a ámbar/rojo cuando se saturan. Con Android Auto activo, si el dongle llega a 75 °C el celular avisa con una notificación (máximo una cada 10 minutos).  El tráfico WiFi está en **Mbps** (igual que la web del dongle).

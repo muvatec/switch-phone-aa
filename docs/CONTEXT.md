@@ -55,6 +55,10 @@ Compose con menú inferior (Celulares · Ajustes · Monitor · Herramientas), aj
 - Commits firmados con SSH, releases automáticas en cada push a `main`.
 - `android-actions/setup-android@v3` falló ("Failed to find package 'tools'"); se usa el SDK preinstalado del runner.
 
+### 8. Internet para pasajeros (probado y descartado)
+
+Se quiso compartir los datos del celular con todo el carro. Hallazgos: el Pixel soporta WiFi cliente + hotspot a la vez (`AP_STA`), pero una app normal **no puede encender el hotspot ni fijar su nombre/clave**. Se hizo una tarjeta con nombre, contraseña, QR y botón en la notificación; como la configuración seguía siendo manual no aportaba nada y **se eliminó**. Caminos que quedan abiertos: Shizuku (automático, requiere activarlo en cada arranque), router 4G con SIM, o un firmware modificado que convierta al dongle en puente (en el firmware público del dongle se ven `hostapd`, `wpa_supplicant` y `udhcpd`, pero no `iptables`).
+
 ## Errores que ya se pagaron (para no repetirlos)
 
 | Error | Causa | Solución |

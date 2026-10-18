@@ -164,12 +164,6 @@ class PresenceService : Service() {
             .setColor(0xFF2EB872.toInt())
             .addAction(0, "Desconectar", servicePending(ACTION_DISCONNECT, 11))
             .addAction(0, "Abrir app", open)
-            .apply {
-                if (Prefs.hotspotRemind(this@PresenceService)) addAction(0, "Hotspot", PendingIntent.getActivity(
-                    this@PresenceService, 18,
-                    Intent("android.settings.TETHER_SETTINGS").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
-            }
             .setPriority(NotificationCompat.PRIORITY_LOW).build()
     }
 
