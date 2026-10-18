@@ -17,6 +17,15 @@
 
 Los nombres vienen del dongle. Si el dongle guarda uno sin nombre, la app aprende el nombre al conectarse; también puedes tocar un nombre y **Renombrar**.
 
+## Agregar un celular nuevo
+
+En **Celulares → Agregar celular** hay una guía de tres pasos:
+1. En el celular que ya está conectado, **Liberar dongle** (reinicia el dongle; solo conecta a un celular a la vez).
+2. En el celular nuevo, instalar Switch Phone y **emparejar el Bluetooth** con el nombre del dongle (la guía lo muestra y abre los ajustes de Bluetooth).
+3. En el celular nuevo, abrir Android Auto y conectar un carro nuevo.
+
+La pantalla detecta cuando el celular nuevo aparece en la lista del dongle y lo confirma ("¡Celular agregado!").
+
 ## Cambiar de celular
 
 ### Desde el celular que quiere el carro (recomendado)

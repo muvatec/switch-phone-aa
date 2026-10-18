@@ -138,6 +138,7 @@ class DongleClient(context: Context) {
         j.optJSONArray("ModuleInfo")?.let { a -> for (i in 0 until a.length()) a.optJSONObject(i)?.let { modules[it.optString("name")] = it.optString("version") } }
         list.forEach { it.alias = aliases[it.id].orEmpty() }
         Prefs.cacheNames(appCtx, list.map { it.label })
+        Prefs.cacheBtName(appCtx, box.optString("bt"))
         return DongleState(
             version = box.optString("ver"),
             product = box.optString("productType"),
@@ -244,5 +245,7 @@ object Prefs {
         sp(c).getStringSet("known_names", emptySet())?.firstOrNull { Presence.hash(it) == h }
     fun autoAccept(c: Context) = sp(c).getBoolean("auto_accept", false)
     fun setAutoAccept(c: Context, v: Boolean) = sp(c).edit().putBoolean("auto_accept", v).apply()
+    fun cacheBtName(c: Context, v: String) { if (v.isNotBlank()) sp(c).edit().putString("bt_name", v).apply() }
+    fun lastBtName(c: Context) = sp(c).getString("bt_name", "") ?: ""
     fun setAggressive(c: Context, v: Boolean) = sp(c).edit().putBoolean("aggressive_switch", v).apply()
 }

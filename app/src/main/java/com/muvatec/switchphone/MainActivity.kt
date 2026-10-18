@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -154,6 +156,8 @@ fun DongleApp() {
     var aggressive by remember { mutableStateOf(Prefs.aggressive(ctx)) }
     var advanced by remember { mutableStateOf(false) }
     var editName by remember { mutableStateOf<NameField?>(null) }
+    var addOpen by remember { mutableStateOf(false) }
+    var baseline by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     fun refresh() {
         scope.launch {
@@ -252,7 +256,14 @@ fun DongleApp() {
                     }
                 }
 
-                item { SectionTitle("Celulares") }
+                item {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.weight(1f)) { SectionTitle("Celulares") }
+                        TextButton(onClick = { baseline = s.devices.map { it.id }.toSet(); addOpen = true }) {
+                            Icon(Icons.Filled.Add, null, Modifier.size(18.dp)); Spacer(Modifier.size(4.dp)); Text("Agregar celular")
+                        }
+                    }
+                }
                 if (s.devices.isEmpty()) item { Hint("El dongle no tiene celulares guardados todavía.") }
                 items(s.devices.sortedBy { s.statusOf(it).ordinal }, key = { it.id }) { d ->
                     PhoneCard(
@@ -279,6 +290,34 @@ fun DongleApp() {
         }
     }
 
+    if (addOpen) {
+        val btName = state?.btName?.ifBlank { null } ?: Prefs.lastBtName(ctx).ifBlank { "el nombre del dongle (AutoKit_xxx)" }
+        val added = state?.devices?.filter { it.id !in baseline }.orEmpty()
+        AlertDialog(
+            onDismissRequest = { addOpen = false },
+            title = { Text(if (added.isEmpty()) "Agregar un celular" else "¡Celular agregado!") },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (added.isNotEmpty()) {
+                        added.forEach { Text("✓ ${it.label} ya está guardado en el dongle.", fontWeight = FontWeight.Bold, color = Active) }
+                        Text("Ya puedes cambiar a él desde la lista o desde la pantalla del carro.")
+                    } else {
+                        Text("El dongle solo conecta a un celular a la vez, así que primero hay que dejarlo libre.")
+                        Text("1. En el celular que ya está conectado, pulsa «Liberar dongle».", style = MaterialTheme.typography.bodyMedium)
+                        OutlinedButton(onClick = { act("Dongle liberado · reiniciando") { client.restart() } }, Modifier.fillMaxWidth()) { Text("Liberar dongle (reinicia)") }
+                        Text("2. En el celular nuevo: instala Switch Phone y empareja el Bluetooth con \"$btName\".", style = MaterialTheme.typography.bodyMedium)
+                        OutlinedButton(onClick = {
+                            ctx.startActivity(android.content.Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+                        }, Modifier.fillMaxWidth()) { Text("Abrir Bluetooth (en el celular nuevo)") }
+                        Text("3. En el celular nuevo abre Android Auto y elige conectar un carro nuevo. Se conectará por WiFi al dongle.", style = MaterialTheme.typography.bodyMedium)
+                        Text("Esta pantalla detecta cuando el celular nuevo aparece en el dongle (se actualiza sola).", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { addOpen = false }) { Text(if (added.isEmpty()) "Cerrar" else "Listo") } },
+        )
+    }
     editName?.let { f ->
         var text by remember(f) { mutableStateOf(f.current) }
         val valid = NAME_RULE.matches(text) && text != f.current
