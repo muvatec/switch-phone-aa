@@ -7,7 +7,10 @@ Cambia entre varios celulares Android en un dongle inalámbrico de Android Auto 
 - El que quiere conectarse **abre la app y pide la conexión**; el celular activo **aprueba o rechaza** (aviso en el celular y ventana en la pantalla del carro).
 - Notificación permanente en el celular activo con **Desconectar** y **Abrir app**.
 - Botón en el **panel rápido** y **atajo** en el ícono: "Usar este celular".
-- Ajustes del dongle desde el celular: nombres (dispositivo, Bluetooth, WiFi), conexión rápida, retardo de audio, resolución, canal WiFi.
+- Menú inferior con **Celulares · Ajustes · Monitor · Herramientas**.
+- **Ajustes del dongle** desde el celular según lo que reporte tu firmware: nombres (dispositivo, Bluetooth, WiFi), conexión, audio y llamadas, video, canal WiFi, idioma.
+- **Monitor** en vivo (temperatura, CPU, memoria, WiFi) con aviso si el dongle se calienta.
+- **Herramientas:** logo propio, datos del carro, descarga de logs y restauración.
 
 > Proyecto independiente. No está afiliado a Carlinkit, Google ni Android Auto. Usa la API web que el propio dongle expone para su interfaz de configuración. Úsalo bajo tu responsabilidad: cambiar nombres o resolución reinicia el dongle y puede pedir volver a emparejar.
 

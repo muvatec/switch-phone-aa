@@ -61,6 +61,8 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -88,9 +90,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val Active = Color(0xFF2EB872)
-private val Available = Color(0xFF2B8CFF)
-private val Saved = Color(0xFF8A93A0)
+val Active = Color(0xFF2EB872)
+val Available = Color(0xFF2B8CFF)
+val Saved = Color(0xFF8A93A0)
 
 private fun scheme(dark: Boolean): ColorScheme = if (dark) darkColorScheme(
     primary = Available, onPrimary = Color.White,
@@ -114,9 +116,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-private val RESOLUTIONS = listOf(800 to 480, 1280 to 720, 1920 to 1080)
-private val CHANNELS = listOf(36, 40, 44, 48, 149, 153, 157, 161, 165)
 
 private fun PhoneStatus.color() = when (this) {
     PhoneStatus.CONNECTED -> Active
@@ -187,14 +186,21 @@ fun DongleApp() {
         while (true) { delay(6000); refresh() }
     }
 
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        val s = state
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().statusBarsPadding(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item { Header(onRefresh = { refresh() }) }
+    val ctl = Ctl(ctx, client, state, { msg, block -> act(msg, block) }, { refresh() },
+        { msg -> scope.launch { snack.showSnackbar(msg) } }, { editName = it }, { confirmRestart = true })
+    var tab by remember { mutableStateOf(Tab.HOME) }
+
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            when (tab) {
+                Tab.HOME -> {
+                    val s = state
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().statusBarsPadding(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+            item { ScreenTitle("Switch Phone", "Elige qué celular usa Android Auto") { refresh() } }
 
             if (s == null) {
                 item { OfflineCard(loading = loading, error = error) }
@@ -257,95 +263,20 @@ fun DongleApp() {
                     )
                 }
 
-                item { SectionTitle("Ajustes rápidos") }
-                item {
-                    SoftCard {
-                        SettingRow("Conexión rápida", "Reconecta más rápido al subir al carro",
-                            checked = (s.settings["fastConnect"] ?: 0) == 1) {
-                            act("Conexión rápida ${if (it) "activada" else "desactivada"}") { client.set("fastConnect", if (it) 1 else 0) }
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = .4f))
-                        SettingRow("Conectar automáticamente", "El dongle busca un celular al encender",
-                            checked = (s.settings["autoConn"] ?: 0) == 1) {
-                            act("Conexión automática ${if (it) "activada" else "desactivada"}") { client.set("autoConn", if (it) 1 else 0) }
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = .4f))
-                        var v by remember(s.settings["mediaDelay"]) { mutableStateOf((s.settings["mediaDelay"] ?: 1000).toFloat()) }
-                        Column(Modifier.padding(16.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f)) {
-                                    Text("Retardo de audio", fontWeight = FontWeight.SemiBold)
-                                    Text("Menos = más rápido, más = más estable", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                                Text("${v.toInt()} ms", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            }
-                            Slider(
-                                value = v, onValueChange = { v = (it / 100).toInt() * 100f },
-                                valueRange = 300f..2000f,
-                                onValueChangeFinished = { act("Retardo ${v.toInt()} ms") { client.set("mediaDelay", v.toInt()) } },
-                            )
-                        }
+                    }
                     }
                 }
-
-                item { SectionTitle("Nombres del dongle") }
-                item {
-                    SoftCard {
-                        NameRow(Icons.Filled.Tune, "Dispositivo", s.boxName) { editName = NameField("boxName", "Nombre del dispositivo", s.boxName) }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = .4f))
-                        NameRow(Icons.Filled.Bluetooth, "Bluetooth", s.btName) { editName = NameField("btName", "Nombre Bluetooth", s.btName) }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = .4f))
-                        NameRow(Icons.Filled.Wifi, "WiFi", s.wifiName) { editName = NameField("wifiName", "Nombre del WiFi", s.wifiName) }
-                    }
-                }
-
-                item {
-                    TextButton(onClick = { advanced = !advanced }, Modifier.fillMaxWidth()) {
-                        Text(if (advanced) "Ocultar avanzado" else "Mostrar avanzado")
-                        Icon(if (advanced) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, null)
-                    }
-                }
-                item {
-                    AnimatedVisibility(advanced) {
-                        SoftCard {
-                            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text("Pantalla (reinicia el dongle)", fontWeight = FontWeight.SemiBold)
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    val w = s.settings["resolutionWidth"]; val h = s.settings["resolutionHeight"]
-                                    RESOLUTIONS.forEach { (rw, rh) ->
-                                        FilterChip(selected = w == rw && h == rh,
-                                            onClick = { act("Resolución ${rw}x$rh · reinicia el dongle") { client.set("resolutionWidth", rw); client.set("resolutionHeight", rh) } },
-                                            label = { Text("${rw}x$rh") })
-                                    }
-                                }
-                                Text("Canal WiFi 5 GHz (reinicia el dongle)", fontWeight = FontWeight.SemiBold)
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    val cur = s.settings["wifiChannel"]
-                                    CHANNELS.forEach { ch ->
-                                        FilterChip(selected = cur == ch,
-                                            onClick = { act("Canal $ch · reinicia el dongle") { client.set("wifiChannel", ch) } },
-                                            label = { Text("$ch") })
-                                    }
-                                }
-                                var auto by remember { mutableStateOf(Prefs.autoAccept(ctx)) }
-                                SettingRow("Aceptar solicitudes automáticamente", "Sin preguntar en el carro cuando otro celular pide conectarse", auto, padded = false) {
-                                    auto = it; Prefs.setAutoAccept(ctx, it)
-                                }
-                                SettingRow("Cambio agresivo", "Al cambiar, olvida el celular actual (hay que re-emparejarlo)", aggressive, padded = false) {
-                                    aggressive = it; Prefs.setAggressive(ctx, it)
-                                }
-                                OutlinedButton(
-                                    onClick = { confirmRestart = true }, Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFE5484D)),
-                                    border = BorderStroke(1.dp, Color(0xFFE5484D).copy(alpha = .6f)),
-                                ) { Text("Reiniciar dongle") }
-                            }
-                        }
-                    }
-                }
+                Tab.SETTINGS -> SettingsTab(ctl, aggressive) { aggressive = it; Prefs.setAggressive(ctx, it) }
+                Tab.MONITOR -> MonitorTab(ctl)
+                Tab.TOOLS -> ToolsTab(ctl)
+            }
+            SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).padding(16.dp))
+        }
+        NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+            Tab.values().forEach { t ->
+                NavigationBarItem(selected = tab == t, onClick = { tab = t }, icon = { Icon(t.icon, t.label) }, label = { Text(t.label, maxLines = 1) })
             }
         }
-        SnackbarHost(snack, Modifier.align(Alignment.BottomCenter).padding(16.dp))
     }
 
     editName?.let { f ->
@@ -409,17 +340,6 @@ fun DongleApp() {
 }
 
 @Composable
-private fun Header(onRefresh: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text("Switch Phone", fontSize = 30.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
-            Text("Elige qué celular usa Android Auto", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        IconButton(onClick = onRefresh) { Icon(Icons.Filled.Refresh, "Actualizar", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
-    }
-}
-
-@Composable
 private fun DongleCard(s: DongleState) {
     val brush = Brush.linearGradient(listOf(Color(0xFF1F6FEB), Color(0xFF14A3C7)))
     Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(brush).padding(20.dp)) {
@@ -449,7 +369,7 @@ private fun Meta(icon: ImageVector, text: String) {
 }
 
 @Composable
-private fun OfflineCard(loading: Boolean, error: String?) {
+fun OfflineCard(loading: Boolean, error: String?) {
     SoftCard {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -513,7 +433,7 @@ private fun PhoneCard(d: Device, status: PhoneStatus, onSwitch: () -> Unit, onRe
 }
 
 @Composable
-private fun SoftCard(content: @Composable () -> Unit) {
+fun SoftCard(content: @Composable () -> Unit) {
     Card(
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -523,18 +443,18 @@ private fun SoftCard(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun SectionTitle(text: String) {
+fun SectionTitle(text: String) {
     Text(text, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp,
         color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp, top = 8.dp))
 }
 
 @Composable
-private fun Hint(text: String) {
+fun Hint(text: String) {
     Text(text, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
 }
 
 @Composable
-private fun SettingRow(title: String, subtitle: String, checked: Boolean, padded: Boolean = true, onChange: (Boolean) -> Unit) {
+fun SettingRow(title: String, subtitle: String, checked: Boolean, padded: Boolean = true, onChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(if (padded) PaddingValues16 else androidx.compose.foundation.layout.PaddingValues(0.dp)),
         verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
@@ -548,12 +468,10 @@ private fun SettingRow(title: String, subtitle: String, checked: Boolean, padded
 
 private val PaddingValues16 = androidx.compose.foundation.layout.PaddingValues(16.dp)
 
-private data class NameField(val item: String, val title: String, val current: String)
-
-private val NAME_RULE = Regex("^[0-9a-zA-Z_-]{1,31}$")
+val NAME_RULE = Regex("^[0-9a-zA-Z_-]{1,31}$")
 
 @Composable
-private fun NameRow(icon: ImageVector, label: String, value: String, onEdit: () -> Unit) {
+fun NameRow(icon: ImageVector, label: String, value: String, onEdit: () -> Unit) {
     Row(Modifier.fillMaxWidth().clickable(onClick = onEdit).padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
         Spacer(Modifier.size(14.dp))

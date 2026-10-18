@@ -28,10 +28,19 @@ data class DongleState(
     val linkType: String,
     val devices: List<Device>,
     val settings: Map<String, Int>,
+    val channels: List<Int> = emptyList(),
+    val carInfo: CarInfoData = CarInfoData("", "", 0),
+    val langs: List<Lang> = emptyList(),
+    val modules: Map<String, String> = emptyMap(),
+    val hardware: String = "",
 ) {
     /** Active = the phone that is projecting Android Auto (known by the phones themselves, not the dongle). */
     fun isConnected(d: Device): Boolean = Presence.isActive(d.label)
 }
+
+data class CarInfoData(val brand: String, val model: String, val year: Int)
+data class Lang(val id: Int, val name: String)
+data class Monitor(val cpu: Int, val temp: Double, val freq: Int, val mem: Double, val rx: Double, val tx: Double)
 
 enum class PhoneStatus { CONNECTED, NEARBY, SAVED }
 
@@ -62,7 +71,7 @@ class DongleClient(context: Context) {
     private fun md5(s: String) =
         MessageDigest.getInstance("MD5").digest(s.toByteArray()).joinToString("") { "%02x".format(it) }
 
-    private fun post(params: Map<String, String>): String {
+    private fun post(params: Map<String, String>, readTimeoutMs: Int = 6000): String {
         val p = params.toMutableMap()
         p["ts"] = System.currentTimeMillis().toString()
         val signed = p.toSortedMap().entries.joinToString("&") { "${it.key}=${it.value}" }
@@ -74,7 +83,7 @@ class DongleClient(context: Context) {
         try {
             conn.requestMethod = "POST"
             conn.connectTimeout = 3000
-            conn.readTimeout = 6000
+            conn.readTimeout = readTimeoutMs
             conn.doOutput = true
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             conn.outputStream.use { it.write(body.toByteArray()) }
@@ -113,6 +122,20 @@ class DongleClient(context: Context) {
                 Prefs.setAlias(appCtx, blank[0].id, model); aliases[blank[0].id] = model
             }
         }
+        val channels = ArrayList<Int>()
+        j.optJSONArray("WifiChannelList")?.let { a -> for (i in 0 until a.length()) a.optJSONObject(i)?.optInt("id")?.let { channels += it } }
+        val ci = j.optJSONObject("CarInfo")
+        val carInfo = CarInfoData(ci?.optString("brand").orEmpty(), ci?.optString("model").orEmpty(), ci?.optInt("year") ?: 0)
+        val langs = ArrayList<Lang>()
+        j.optJSONArray("LangList")?.let { a ->
+            for (i in 0 until a.length()) {
+                val o = a.opt(i)
+                if (o is JSONObject) langs += Lang(o.optInt("id", i), o.optString("name"))
+                else langs += Lang(i, o.toString())
+            }
+        }
+        val modules = LinkedHashMap<String, String>()
+        j.optJSONArray("ModuleInfo")?.let { a -> for (i in 0 until a.length()) a.optJSONObject(i)?.let { modules[it.optString("name")] = it.optString("version") } }
         list.forEach { it.alias = aliases[it.id].orEmpty() }
         Prefs.cacheNames(appCtx, list.map { it.label })
         return DongleState(
@@ -125,6 +148,11 @@ class DongleClient(context: Context) {
             linkType = box.optString("MDLinkType"),
             devices = list,
             settings = settings,
+            channels = channels,
+            carInfo = carInfo,
+            langs = langs,
+            modules = modules,
+            hardware = box.optString("hardwareVer"),
         )
     }
 
@@ -141,6 +169,43 @@ class DongleClient(context: Context) {
     fun switchTo(target: Device, current: Device?, aggressive: Boolean) {
         if (aggressive && current != null && current.id != target.id) forget(current.id)
         restart()
+    }
+
+    fun boxMonitor(): Monitor {
+        val m = JSONObject(post(mapOf("cmd" to "BoxMonitor"))).getJSONObject("BoxMonitor")
+        return Monitor(m.optInt("CpuRate"), m.optDouble("CpuTemp"), m.optInt("CpuFreq"), m.optDouble("MemRate"), m.optDouble("WifiRX"), m.optDouble("WifiTX"))
+    }
+
+    /** Car brand / model / year the dongle reports to the phone. Each value up to 31 bytes. */
+    fun setCarInfo(brand: String, model: String, year: Int) =
+        expectOk(post(mapOf("cmd" to "carInfo", "brand" to brand, "model" to model, "year" to year.toString())))
+
+    /** kind: logFile | appLogFile | sdkLogFile */
+    fun readLog(kind: String): String = post(mapOf("cmd" to kind), readTimeoutMs = 20000)
+
+    fun resetLogo() = set("resetLogo", "")
+    fun factoryReset() = expectOk(post(mapOf("cmd" to "reset")))
+    fun resetApp() = expectOk(post(mapOf("cmd" to "resetApp")))
+
+    /** Upload a custom car logo (PNG, up to 100 KB, 180x180). The dongle applies it after a restart. */
+    fun uploadLogo(png: ByteArray) {
+        val boundary = "----SwitchPhone${System.nanoTime()}"
+        val conn = dongleNetwork().openConnection(URL("http://192.168.50.2/upload.cgi")) as HttpURLConnection
+        try {
+            conn.requestMethod = "POST"
+            conn.connectTimeout = 3000
+            conn.readTimeout = 20000
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+            conn.outputStream.use { o ->
+                o.write("--$boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"carlogo.png\"\r\nContent-Type: application/octet-stream\r\n\r\n".toByteArray())
+                o.write(png)
+                o.write("\r\n--$boundary--\r\n".toByteArray())
+            }
+            if (conn.responseCode != 200) throw DongleException("Subida rechazada (HTTP ${conn.responseCode})")
+        } finally {
+            conn.disconnect()
+        }
     }
 
     /** Reboot the dongle; the linked phone drops and the box searches again. */

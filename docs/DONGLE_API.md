@@ -43,7 +43,7 @@ Una firma incorrecta o un formato multipart mal formado responde `400 Bad Reques
 | `carInfo` | `brand`, `model`, `year`, `userid` | Datos del carro |
 | `syncTime` | — | Sincroniza hora |
 | `logFile`, `appLogFile`, `sdkLogFile` | — | Logs |
-| *(subida)* `POST /upload.cgi` | multipart | Actualización de firmware / logo |
+| *(subida)* `POST /upload.cgi` | multipart, campo `file` | Logo: PNG 180×180 ≤ 100 KB con nombre `carlogo.png`; luego `restart`. También recibe imágenes de firmware (la app **no** lo usa) |
 
 ## `infos`
 
@@ -75,7 +75,14 @@ Una firma incorrecta o un formato multipart mal formado responde `400 Bad Reques
 | `ScreenDPI` | 0–480 | no |
 | `resolutionWidth`, `resolutionHeight` | 800x480, 1280x720, 1920x1080 (u otros) | sí |
 | `wifiChannel` | 1–13, 36, 40, 44, 48, 149–165 | sí |
-| `lang`, `mediaSound`, `naviVolume`, `CallQuality`, `carLinkType`, `transMode` | enteros | depende |
+| `mediaSound`, `btCall`, `syncMode`, `squareCorner`, `mouseMode`, `KnobMode`, `returnMode` | `0` / `1` (returnMode: 0 carro original, 1 dongle) | no |
+| `CallQuality` | 0 normal, 1 clara, 2 HD | no |
+| `NaviAudio` | 0 navegación, 1 voz, 2 multimedia | no |
+| `naviVolume` | 0–100 | no |
+| `displaySize` | 0 predeterminado, 1 S, 2 M, 3 L | no |
+| `autoDisplay`, `transMode` | 0 normal, 1 vehículo / compatible | no |
+| `carLinkType` | 2 CarPlay, 4 Android Auto, 30 automático | probable |
+| `lang` | id de `LangList` | no |
 | `resetLogo` | — | no |
 
 Qué ajustes aparecen en `Settings` depende del firmware: la versión `2025.12.29` oculta varios (`ScreenDPI`, `echoDelay`, `autoUpdate`, …), aunque la interfaz sigue enviándolos si existen.

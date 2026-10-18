@@ -41,20 +41,52 @@ Mientras proyecta Android Auto, el celular muestra una notificación permanente 
 - **Desconectar:** reinicia el dongle para soltar este celular. Puede volver a conectarse solo si su Android Auto está en automático.
 - **Abrir app.**
 
-## Ajustes del dongle
+## Pestañas (menú inferior)
 
-Se ven cuando el celular está en el WiFi del dongle (durante una sesión de Android Auto lo está).
-
-| Ajuste | Efecto |
+| Pestaña | Contenido |
 |---|---|
-| Conexión rápida | Reconecta más rápido |
-| Conectar automáticamente | El dongle busca celular al encender |
-| Retardo de audio (300–2000 ms) | Menos = más reactivo, más = más estable |
-| Nombres: dispositivo, Bluetooth, WiFi | 1–31 caracteres: letras, números, `_` y `-`. **Reinicia el dongle para aplicar.** Cambiar Bluetooth o WiFi puede obligar a re-emparejar los celulares |
-| Resolución 800x480 / 1280x720 / 1920x1080 | Reinicia el dongle |
-| Canal WiFi 5 GHz | Reinicia el dongle |
-| Aceptar solicitudes automáticamente | El celular activo cede sin preguntar. **Apagado por defecto** |
-| Cambio agresivo | Al cambiar, olvida el celular actual en el dongle; hay que volver a emparejarlo |
+| **Celulares** | Estado del dongle, solicitar conexión, tarjetas ACTIVO / DISPONIBLE / GUARDADO, cambiar, renombrar u olvidar |
+| **Ajustes** | Nombres, conexión, audio, video, WiFi, idioma y opciones de esta app |
+| **Monitor** | Temperatura, CPU, memoria y tráfico WiFi del dongle en vivo |
+| **Herramientas** | Logo del carro, datos del carro, logs, firmware, reinicio y restauración |
+
+Las pantallas de Ajustes, Monitor y Herramientas hablan con el dongle, así que necesitan que el celular esté en su WiFi (`AutoKit_xx`); durante una sesión de Android Auto ya lo está.
+
+## Ajustes
+
+Solo aparecen los ajustes que **tu firmware** reporta (como en la web del dongle). Los valores desconocidos se listan al final como solo lectura.
+
+| Grupo | Ajuste | Efecto |
+|---|---|---|
+| Nombres | Dispositivo, Bluetooth, WiFi | 1–31 caracteres: letras, números, `_` y `-`. **Reinicia el dongle para aplicar.** Cambiar Bluetooth o WiFi puede obligar a re-emparejar |
+| Conexión | Conexión rápida, conectar automáticamente | Reconexión más rápida / el dongle busca celular al encender |
+| | Sincronizar hora, modo segundo plano | |
+| | Al salir de Android Auto | Vuelve al carro original o al dongle |
+| | Retardo de arranque (0–120 s) | |
+| | Tipo de enlace | Automático / CarPlay / Android Auto |
+| | Actualizar firmware automáticamente | El dongle puede cambiar de versión solo |
+| Audio | Retardo de audio (300–2000 ms) | Menos = más reactivo, más = más estable |
+| | Sonido multimedia, calidad de llamada (Normal/Clara/HD) | |
+| | Audio y volumen de navegación (0–100) | |
+| | Llamadas por Bluetooth, retardo de eco, reproducción automática | |
+| Video | Resolución 800x480 / 1280x720 / 1920x1080 | Reinicia el dongle |
+| | Bitrate (0 = automático), FPS, DPI, tamaño de iconos | |
+| | Modo de pantalla, modo de transferencia, esquinas cuadradas, modo ratón/perilla, GPS | |
+| WiFi | Canal 5 GHz y 2.4 GHz | Reinicia el dongle |
+| Esta app | Aceptar solicitudes automáticamente | El celular activo cede sin preguntar. **Apagado por defecto** |
+| | Cambio agresivo | Al cambiar, olvida el celular actual; hay que volver a emparejarlo |
+
+## Monitor
+
+Lee `BoxMonitor` cada 2 s y dibuja la tendencia de los últimos 2 minutos. La temperatura se colorea: verde < 60 °C, ámbar 60–75 °C, rojo ≥ 75 °C. Con Android Auto activo, si el dongle llega a 75 °C el celular avisa con una notificación (máximo una cada 10 minutos). Las unidades de tráfico WiFi las entrega el dongle sin etiqueta; se muestran tal cual.
+
+## Herramientas
+
+- **Logo del carro:** elige una imagen; se recorta al centro, se reduce a 180×180 PNG (máx. 100 KB) y se sube a `upload.cgi`. Reinicia el dongle para verlo. *Volver al logo original* usa `resetLogo`.
+- **Datos del carro:** marca, modelo y año (hasta 31 caracteres) que el dongle informa.
+- **Logs:** descarga `logFile`, `appLogFile` o `sdkLogFile` y abre el menú de compartir.
+- **Firmware:** versión, hardware y módulos. **No** actualiza el firmware: una imagen incorrecta puede dejar el dongle inservible; usa la app oficial.
+- **Zona de peligro:** reiniciar, restablecer la app del dongle y restaurar de fábrica (pide escribir `RESTAURAR`; borra ajustes y celulares guardados).
 
 ## Problemas comunes
 

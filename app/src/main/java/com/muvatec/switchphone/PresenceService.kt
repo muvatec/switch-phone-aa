@@ -30,6 +30,8 @@ class PresenceService : Service() {
     private var lastActive: Boolean? = null
     private var offeredFor: String? = null
     private var dismissedFor: String? = null
+    private var lastMonitorAt = 0L
+    private var lastHotAlertAt = 0L
 
     private val tick = object : Runnable {
         override fun run() { evaluate(); main.postDelayed(this, 3000) }
@@ -94,6 +96,7 @@ class PresenceService : Service() {
             if (active) { nm.cancel(ID_OFFER); offeredFor = null; if (Presence.reqState.phase != Presence.ReqPhase.IDLE) Presence.clearRequest(this) }
             SwitchTileService.refresh(this)
         }
+        if (active) checkDongleTemperature()
         if (!active) {
             val other = Presence.activeOthers().firstOrNull()
             if (other == null) {
@@ -130,6 +133,21 @@ class PresenceService : Service() {
             b.addAction(0, "Cerrar", servicePending(ACTION_CLEAR, 17))
         } else b.setTimeoutAfter(30_000)
         getSystemService(NotificationManager::class.java).notify(ID_OFFER, b.build())
+    }
+
+    /** While projecting (so the dongle's WiFi is reachable) warn if the dongle overheats. */
+    private fun checkDongleTemperature() {
+        val now = System.currentTimeMillis()
+        if (now - lastMonitorAt < 30_000) return
+        lastMonitorAt = now
+        Thread {
+            runCatching { DongleClient(this).boxMonitor() }.onSuccess { m ->
+                if (m.temp >= HOT_C && now - lastHotAlertAt > 10 * 60_000L) {
+                    lastHotAlertAt = now
+                    main.post { resultNotification("El dongle está muy caliente", "%.0f °C. Evita el sol directo o ponlo donde le dé el aire.".format(m.temp), retry = false) }
+                }
+            }
+        }.start()
     }
 
     private fun foregroundNotification(active: Boolean): Notification {
@@ -242,6 +260,7 @@ class PresenceService : Service() {
         private const val CH_ACTIVE = "active"
         private const val CH_OFFER = "offer"
         private const val ID_FG = 1
+        private const val HOT_C = 75.0
         private const val ID_OFFER = 2
         private const val ID_REQUEST = 3
         const val ACTION_DISCONNECT = "com.muvatec.switchphone.DISCONNECT"
