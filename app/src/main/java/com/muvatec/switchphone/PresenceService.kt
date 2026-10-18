@@ -48,6 +48,7 @@ class PresenceService : Service() {
         else startForeground(ID_FG, n)
         Presence.start(this)
         Presence.onRequest = { h -> handleRequest(h) }
+        Presence.onResult = { st -> showResult(st) }
         CarConnection(this).type.observeForever { t ->
             Presence.setProjecting(this, t == CarConnection.CONNECTION_TYPE_PROJECTION)
             evaluate()
@@ -65,6 +66,7 @@ class PresenceService : Service() {
             }
             ACTION_ACCEPT -> acceptRequest()
             ACTION_REJECT -> rejectRequest()
+            ACTION_CLEAR -> { Presence.clearRequest(this); getSystemService(NotificationManager::class.java).cancel(ID_OFFER) }
             ACTION_DISMISS -> {
                 dismissedFor = offeredFor
                 getSystemService(NotificationManager::class.java).cancel(ID_OFFER)
@@ -76,6 +78,7 @@ class PresenceService : Service() {
     override fun onDestroy() {
         main.removeCallbacks(tick)
         Presence.onRequest = null
+        Presence.onResult = null
         Presence.stop(this)
         super.onDestroy()
     }
@@ -88,7 +91,7 @@ class PresenceService : Service() {
         if (active != lastActive) {
             lastActive = active
             nm.notify(ID_FG, foregroundNotification(active))
-            if (active) { nm.cancel(ID_OFFER); offeredFor = null }
+            if (active) { nm.cancel(ID_OFFER); offeredFor = null; if (Presence.reqState.phase != Presence.ReqPhase.IDLE) Presence.clearRequest(this) }
             SwitchTileService.refresh(this)
         }
         if (!active) {
@@ -102,6 +105,31 @@ class PresenceService : Service() {
                 notifyOffer("$name está usando el carro", "¿Quieres que Android Auto pase a este celular?", withActions = true)
             }
         }
+    }
+
+    /** Requester side: show how the request ended. */
+    private fun showResult(st: Presence.ReqState) {
+        val nm = getSystemService(NotificationManager::class.java)
+        val who = Prefs.nameForHash(this, st.targetHash) ?: "El otro celular"
+        when (st.phase) {
+            Presence.ReqPhase.REJECTED -> resultNotification("$who rechazó la solicitud", "Puedes volver a intentarlo.", retry = true)
+            Presence.ReqPhase.TIMEOUT -> resultNotification("$who no respondió", "Revisa que el carro esté encendido y vuelve a intentarlo.", retry = true)
+            Presence.ReqPhase.ACCEPTED -> resultNotification("$who aceptó", "El dongle se reinicia; Android Auto pasa a este celular en unos 30 s.", retry = false)
+            Presence.ReqPhase.IDLE -> if (offeredFor == null) nm.cancel(ID_OFFER)
+            Presence.ReqPhase.WAITING -> {}
+        }
+    }
+
+    private fun resultNotification(title: String, text: String, retry: Boolean) {
+        val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
+        val b = NotificationCompat.Builder(this, CH_OFFER).setSmallIcon(R.drawable.ic_launcher)
+            .setContentTitle(title).setContentText(text).setContentIntent(open)
+            .setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true)
+        if (retry) {
+            b.addAction(0, "Reintentar", servicePending(ACTION_REQUEST, 12))
+            b.addAction(0, "Cerrar", servicePending(ACTION_CLEAR, 17))
+        } else b.setTimeoutAfter(30_000)
+        getSystemService(NotificationManager::class.java).notify(ID_OFFER, b.build())
     }
 
     private fun foregroundNotification(active: Boolean): Notification {
@@ -188,6 +216,7 @@ class PresenceService : Service() {
     private fun acceptRequest() {
         val req = RequestInbox.pending ?: return
         RequestInbox.clear()
+        Presence.reply(this, req.hash, true)
         getSystemService(NotificationManager::class.java).cancel(ID_REQUEST)
         Thread {
             runCatching {
@@ -203,6 +232,7 @@ class PresenceService : Service() {
     }
 
     private fun rejectRequest() {
+        RequestInbox.pending?.let { Presence.reply(this, it.hash, false) }
         RequestInbox.clear()
         getSystemService(NotificationManager::class.java).cancel(ID_REQUEST)
     }
@@ -217,6 +247,7 @@ class PresenceService : Service() {
         const val ACTION_DISCONNECT = "com.muvatec.switchphone.DISCONNECT"
         const val ACTION_REQUEST = "com.muvatec.switchphone.REQUEST_SWITCH"
         const val ACTION_DISMISS = "com.muvatec.switchphone.DISMISS_OFFER"
+        const val ACTION_CLEAR = "com.muvatec.switchphone.CLEAR_REQUEST"
         const val ACTION_ACCEPT = "com.muvatec.switchphone.ACCEPT_REQUEST"
         const val ACTION_REJECT = "com.muvatec.switchphone.REJECT_REQUEST"
 

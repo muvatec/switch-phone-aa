@@ -39,9 +39,10 @@ El dongle no sirve para saber quién está activo: reporta `MDLinkType=AndroidAu
 ## Beacon BLE
 
 - UUID de servicio `0000a7c1-0000-1000-8000-00805f9b34fb` en el paquete de anuncio.
-- Datos de servicio en la respuesta de escaneo (5 bytes): `hash(4)` + `flags(1)`.
+- Datos de servicio en la respuesta de escaneo (9 bytes): `hash(4)` + `flags(1)` + `destino(4)`.
   - `hash` = primeros 4 bytes de `MD5(nombre Bluetooth en minúsculas)`. Se compara con los nombres que el dongle tiene guardados.
-  - `flags`: bit 0 = proyectando Android Auto; bit 1 = pide el control.
+  - `flags`: bit 0 = proyectando Android Auto; bit 1 = pide el control; bit 2 = **rechazado**; bit 3 = **aceptado**.
+  - `destino` = hash del celular al que va dirigido el mensaje (el que pide → el activo; la respuesta → el que pidió). `00000000` = sin destino.
 - Sin conexión BLE (`setConnectable(false)`), anuncio balanceado, escaneo balanceado con filtro por UUID.
 
 ## Solicitud de conexión
@@ -54,6 +55,20 @@ El dongle no sirve para saber quién está activo: reporta `MDLinkType=AndroidAu
    - Notificación normal en el celular.
 4. Al aceptar, A pide a la API `restart`. (Opcional, "cambio agresivo": antes olvida a A en el dongle.)
 5. El dongle reinicia (~20 s). B es el único que está buscando y conecta. B empieza a proyectar y el estado ACTIVO cambia solo.
+
+### Respuesta y reintento
+
+A contesta por el mismo canal BLE durante 30 s: bit **aceptado** o **rechazado**, dirigido al hash de B. B pasa por estos estados (`Presence.ReqPhase`):
+
+| Estado | Cuándo | Qué ve el usuario |
+|---|---|---|
+| `WAITING` | Pidió y espera (hasta 45 s) | Barra de progreso y **Cancelar** |
+| `REJECTED` | A rechazó | "X rechazó la solicitud" + **Reintentar** (app y notificación) |
+| `TIMEOUT` | A no respondió en 45 s | "X no respondió" + **Reintentar** |
+| `ACCEPTED` | A aceptó | "X aceptó. Conectando…" |
+| `IDLE` | Nada pendiente o ya está proyectando | Botón **Solicitar conexión** |
+
+Al rechazar, A olvida el antiguo bloqueo anti-repetición de 60 s para el solicitante, de modo que B puede reintentar de inmediato.
 
 Con "Aceptar solicitudes automáticamente" activado, A salta el paso de aprobación.
 

@@ -177,6 +177,8 @@ fun DongleApp() {
     val permLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         PresenceService.start(ctx)
     }
+    var tick by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) { while (true) { delay(1000); tick++ } }
     LaunchedEffect(Unit) {
         refresh()
         val perms = Presence.requiredPermissions().toMutableList()
@@ -199,17 +201,36 @@ fun DongleApp() {
             } else {
                 item { DongleCard(s) }
                 item {
-                    val here = Presence.selfProjecting
+                    val here = Presence.selfProjecting; @Suppress("UNUSED_EXPRESSION") tick
                     SoftCard {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             if (here) {
                                 Text("Este celular está activo en el carro", fontWeight = FontWeight.Bold, color = Active)
                             } else {
                                 val other = Presence.activeOthers().firstOrNull()?.let { Prefs.nameForHash(ctx, it) ?: "Otro celular" }
-                                if (other != null) Text("$other está usando el carro", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Button(onClick = { PresenceService.requestHere(ctx); scope.launch { snack.showSnackbar("Solicitud enviada: aparece en la pantalla del carro") } },
-                                    Modifier.fillMaxWidth()) {
-                                    Icon(Icons.Filled.SwapHoriz, null); Spacer(Modifier.size(8.dp)); Text("Solicitar conexión")
+                                val rs = Presence.reqState
+                                val who = Prefs.nameForHash(ctx, rs.targetHash) ?: other ?: "El otro celular"
+                                when (rs.phase) {
+                                    Presence.ReqPhase.WAITING -> {
+                                        Text("Esperando respuesta de $who…", fontWeight = FontWeight.SemiBold)
+                                        androidx.compose.material3.LinearProgressIndicator(Modifier.fillMaxWidth())
+                                        Text("Aparece en la pantalla del carro y en su celular.", style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        OutlinedButton(onClick = { Presence.clearRequest(ctx) }, Modifier.fillMaxWidth()) { Text("Cancelar") }
+                                    }
+                                    Presence.ReqPhase.ACCEPTED -> Text("$who aceptó. Conectando este celular…", fontWeight = FontWeight.Bold, color = Active)
+                                    else -> {
+                                        if (rs.phase == Presence.ReqPhase.REJECTED)
+                                            Text("$who rechazó la solicitud", fontWeight = FontWeight.Bold, color = Color(0xFFE5484D))
+                                        else if (rs.phase == Presence.ReqPhase.TIMEOUT)
+                                            Text("$who no respondió", fontWeight = FontWeight.Bold, color = Color(0xFFE5A100))
+                                        else if (other != null)
+                                            Text("$other está usando el carro", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Button(onClick = { PresenceService.requestHere(ctx) }, Modifier.fillMaxWidth()) {
+                                            Icon(Icons.Filled.SwapHoriz, null); Spacer(Modifier.size(8.dp))
+                                            Text(if (rs.phase == Presence.ReqPhase.IDLE) "Solicitar conexión" else "Reintentar")
+                                        }
+                                    }
                                 }
                             }
                             if (android.os.Build.VERSION.SDK_INT >= 33) {

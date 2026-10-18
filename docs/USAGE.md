@@ -24,6 +24,7 @@ Los nombres vienen del dongle. Si el dongle guarda uno sin nombre, la app aprend
 2. Toca **Solicitar conexión**.
 3. En el carro aparece el aviso **"Y quiere conectarse"** con **Aceptar / Rechazar**; también llega a la notificación del celular activo.
 4. Al aceptar, el dongle se reinicia (~20–30 s) y Android Auto pasa al celular que pidió.
+5. Si el otro **rechaza** o **no responde** (45 s), tu app y una notificación lo dicen ("X rechazó la solicitud") y puedes pulsar **Reintentar**.
 
 El celular inactivo también recibe un aviso automático **"Cambiar a este celular"** cuando ve a otro proyectando.
 

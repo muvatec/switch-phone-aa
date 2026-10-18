@@ -28,11 +28,26 @@ object Presence {
     private val SERVICE = ParcelUuid(UUID.fromString("0000a7c1-0000-1000-8000-00805f9b34fb"))
     private const val FRESH_MS = 45_000L
 
+    enum class ReqPhase { IDLE, WAITING, REJECTED, ACCEPTED, TIMEOUT }
+    class ReqState(val phase: ReqPhase, val targetHash: String = "", val at: Long = 0)
+
     private class Seen(val at: Long, val projecting: Boolean, val requesting: Boolean)
     private val seen = ConcurrentHashMap<String, Seen>() // name-hash -> last beacon
     @Volatile var myName: String = ""
     @Volatile private var projecting = false
     @Volatile private var requestingUntil = 0L
+    @Volatile private var requestTarget = ""
+    @Volatile private var replyTarget = ""
+    @Volatile private var replyFlag = 0
+    @Volatile private var replyUntil = 0L
+    @Volatile private var lastActiveHash = ""
+
+    /** Requester side: what happened to the request this phone sent. */
+    @Volatile var reqState = ReqState(ReqPhase.IDLE)
+        private set
+    @Volatile var onResult: ((ReqState) -> Unit)? = null
+
+    private fun setReq(s: ReqState) { reqState = s; mainHandler.post { onResult?.invoke(s) } }
     private val handledAt = ConcurrentHashMap<String, Long>()
     private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
@@ -46,16 +61,46 @@ object Presence {
     /** Name-hashes of other phones that are projecting right now. */
     fun activeOthers(): List<String> {
         val now = System.currentTimeMillis()
-        return seen.filter { it.value.projecting && now - it.value.at < FRESH_MS && it.key != selfHash }.keys.toList()
+        val l = seen.filter { it.value.projecting && now - it.value.at < FRESH_MS && it.key != selfHash }.keys.toList()
+        if (l.isNotEmpty()) lastActiveHash = l.first()
+        return l
     }
 
-    /** Ask the phone that is projecting to hand the dongle over to this phone (sent over BLE). */
+    /** Ask the phone that is projecting to hand the dongle over to this phone (sent over BLE). Can be retried. */
     @SuppressLint("MissingPermission")
     @Synchronized
     fun requestSwitch(ctx: Context) {
-        requestingUntil = System.currentTimeMillis() + 45_000
+        val now = System.currentTimeMillis()
+        requestTarget = activeOthers().firstOrNull() ?: lastActiveHash
+        requestingUntil = now + 45_000
+        setReq(ReqState(ReqPhase.WAITING, requestTarget, now))
         if (started) { stopAdvertising(); startAdvertising(ctx) }
-        mainHandler.postDelayed({ refreshAdvertising(ctx) }, 46_000)
+        mainHandler.postDelayed({
+            if (reqState.phase == ReqPhase.WAITING && reqState.at == now) {
+                requestingUntil = 0
+                setReq(ReqState(ReqPhase.TIMEOUT, requestTarget, now))
+                refreshAdvertising(ctx)
+            }
+        }, 46_000)
+    }
+
+    /** Dismiss a finished request (result shown) without retrying. */
+    fun clearRequest(ctx: Context) {
+        requestingUntil = 0
+        setReq(ReqState(ReqPhase.IDLE))
+        refreshAdvertising(ctx)
+    }
+
+    /** Active phone side: tell the requester whether its request was accepted or rejected. */
+    @SuppressLint("MissingPermission")
+    @Synchronized
+    fun reply(ctx: Context, requesterHash: String, accepted: Boolean) {
+        if (!accepted) handledAt.remove(requesterHash)       // allow the requester to try again right away
+        replyTarget = requesterHash
+        replyFlag = if (accepted) 8 else 4
+        replyUntil = System.currentTimeMillis() + 30_000
+        if (started) { stopAdvertising(); startAdvertising(ctx) }
+        mainHandler.postDelayed({ refreshAdvertising(ctx) }, 31_000)
     }
 
     @SuppressLint("MissingPermission")
@@ -126,6 +171,8 @@ object Presence {
                     if (d.size < 4) return
                     val h = d.take(4).joinToString("") { "%02x".format(it) }
                     val flags = if (d.size >= 5) d[4].toInt() else 0
+                    val target = if (d.size >= 9) d.slice(5..8).joinToString("") { "%02x".format(it) } else ""
+                    val forMe = target == selfHash
                     val proj = flags and 1 != 0
                     val req = flags and 2 != 0
                     val prev = seen[h]
@@ -133,9 +180,14 @@ object Presence {
                         Log.d("SwitchPhone", "BLE saw $h projecting=$proj requesting=$req rssi=${result.rssi}")
                     val now = System.currentTimeMillis()
                     seen[h] = Seen(now, proj, req)
-                    if (req && projecting && now - (handledAt[h] ?: 0L) > 60_000) {
+                    if (req && projecting && (forMe || target == "00000000") && now - (handledAt[h] ?: 0L) > 60_000) {
                         handledAt[h] = now
                         onRequest?.invoke(h)
+                    }
+                    // Replies to this phone's request.
+                    if (forMe && reqState.phase == ReqPhase.WAITING) {
+                        if (flags and 4 != 0) { requestingUntil = 0; setReq(ReqState(ReqPhase.REJECTED, h, now)) }
+                        else if (flags and 8 != 0) { requestingUntil = 0; setReq(ReqState(ReqPhase.ACCEPTED, h, now)) }
                     }
                 }
             }
@@ -157,8 +209,11 @@ object Presence {
             override fun onStartFailure(e: Int) { Log.d("SwitchPhone", "BLE adv FAIL code=$e") }
         }
         val data = AdvertiseData.Builder().setIncludeDeviceName(false).addServiceUuid(SERVICE).build()
-        val flags = (if (projecting) 1 else 0) or (if (requesting) 2 else 0)
-        val payload = hash(myName).chunked(2).map { it.toInt(16).toByte() }.toByteArray() + byteArrayOf(flags.toByte())
+        val replying = System.currentTimeMillis() < replyUntil
+        val flags = (if (projecting) 1 else 0) or (if (requesting) 2 else 0) or (if (replying) replyFlag else 0)
+        val target = when { requesting -> requestTarget; replying -> replyTarget; else -> "" }.ifBlank { "00000000" }
+        fun bytes(h: String) = h.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+        val payload = bytes(hash(myName)) + byteArrayOf(flags.toByte()) + bytes(target)
         val resp = AdvertiseData.Builder().addServiceData(SERVICE, payload).build()
         val settings = AdvertiseSettings.Builder()
             .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
