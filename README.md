@@ -54,6 +54,7 @@ Cada push a `main` ejecuta [`.github/workflows/release.yml`](.github/workflows/r
 | [docs/RESEARCH.md](docs/RESEARCH.md) | Cómo funciona el dongle por dentro (USB, AOA, firmware) |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Compilar, probar con DHU, CI, firma |
 | [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | Qué no se puede hacer y por qué |
+| [docs/SETTINGS_REFERENCE.md](docs/SETTINGS_REFERENCE.md) | Qué hace cada ajuste según el propio dongle |
 | [docs/FIRMWARE.md](docs/FIRMWARE.md) | Versiones de firmware vistas, cambios entre ellas, cómo se actualiza |
 | [docs/CONTEXT.md](docs/CONTEXT.md) | Historia del proyecto, decisiones, errores ya resueltos, pendientes |
 

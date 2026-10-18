@@ -87,26 +87,30 @@ fun SettingsTab(c: Ctl, aggressive: Boolean, onAggressive: (Boolean) -> Unit) {
             }
         }
 
+        // Labels and help text come from the dongle's own web UI (English language file + its "?" popups).
+
         // ---- Connection --------------------------------------------------------------------------
         val connection = listOfNotNull(
-            sw("fastConnect", "Conexión rápida", "Reconecta más rápido al subir al carro"),
-            sw("autoConn", "Conectar automáticamente", "El dongle busca un celular al encender"),
-            choice("returnMode", "Al salir de Android Auto", "A qué pantalla vuelve el carro", listOf(0 to "Carro original", 1 to "Dongle")),
+            sw("autoConn", "Conectar automáticamente", "El dongle busca y conecta al celular por su cuenta"),
+            sw("fastConnect", "Modo de alta velocidad", "\"High speed Mode\" del dongle: acelera la conexión"),
+            choice("carLinkType", "Tipo de enlace (HULink)", "Cómo se presenta el dongle a la unidad principal del carro", listOf(30 to "Automático", 2 to "CarPlay", 4 to "Android Auto")),
+            choice("returnMode", "Al terminar la conexión", "A qué pantalla vuelve el carro", listOf(0 to "Carro original", 1 to "Dongle")),
             slider("startDelay", "Retardo de arranque", "Espera antes de iniciar la conexión", 0, 120, 5, " s", "sin retardo"),
-            choice("carLinkType", "Tipo de enlace con el carro", "Cómo se presenta el dongle al carro", listOf(30 to "Automático", 2 to "CarPlay", 4 to "Android Auto")),
-            sw("autoUpdate", "Actualizar firmware automáticamente", "El dongle puede cambiar de versión solo"),
+            sw("bgMode", "Segundo plano", "No muestra la pantalla de conexión del dongle; actívalo si el carro se ve borroso tras conectar el celular"),
+            sw("syncMode", "Sincronizar tablero", "Para tableros de algunos carros antiguos; normalmente no hace falta"),
+            sw("autoUpdate", "Actualización automática", "El dongle puede cambiar de versión solo"),
         )
         if (connection.isNotEmpty()) { item { SectionTitle("Conexión") }; item { Group(connection) } }
 
         // ---- Audio -------------------------------------------------------------------------------
         val audio = listOfNotNull(
-            slider("mediaDelay", "Retardo de audio", "Menos = más reactivo, más = más estable", 300, 2000, 100, " ms"),
+            slider("mediaDelay", "Retardo del audio multimedia", "Por defecto 1000 ms. Más retardo = menos cortes; menos retardo = música más sincronizada con la imagen. Solo cámbialo si hay problemas", 300, 2000, 100, " ms"),
             choice("CallQuality", "Calidad de llamada", "", listOf(0 to "Normal", 1 to "Clara", 2 to "HD")),
-            choice("NaviAudio", "Audio de navegación", "Canal que usan las indicaciones", listOf(0 to "Navegación", 1 to "Voz", 2 to "Multimedia")),
-            slider("naviVolume", "Volumen de navegación", "", 0, 100, 5, "%"),
-            sw("btCall", "Llamadas por Bluetooth", "Usa el Bluetooth del dongle para llamadas"),
+            choice("NaviAudio", "Canal de navegación", "Por dónde suena la voz de navegación", listOf(0 to "Navegación", 1 to "Voz", 2 to "Multimedia")),
+            slider("naviVolume", "Volumen de navegación en llamada", "", 0, 100, 5, "%"),
+            sw("btCall", "Llamadas por Bluetooth", ""),
             slider("echoDelay", "Retardo de eco", "Ajuste del micrófono en llamadas", 20, 2000, 20, " ms"),
-            sw("autoPlay", "Reproducir automáticamente", "Inicia música al conectar"),
+            sw("autoPlay", "Reproducir al conectar", "Según el dongle, solo aplica a HiCar (Huawei)"),
         )
         if (audio.isNotEmpty()) { item { SectionTitle("Audio y llamadas") }; item { Group(audio) } }
 
@@ -117,7 +121,8 @@ fun SettingsTab(c: Ctl, aggressive: Boolean, onAggressive: (Boolean) -> Unit) {
                 SoftCard {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Resolución", fontWeight = FontWeight.SemiBold)
-                        Text("Reinicia el dongle para aplicarla", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Resolución de la imagen del celular. Si se ve mal o estirada, iguálala a la de la pantalla del carro; la mayoría de carros no necesita cambiarla. Reinicia el dongle.",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             val w = set["resolutionWidth"]; val h = set["resolutionHeight"]
                             RESOLUTIONS.forEach { (rw, rh) ->
@@ -131,35 +136,32 @@ fun SettingsTab(c: Ctl, aggressive: Boolean, onAggressive: (Boolean) -> Unit) {
             }
         }
         val video = listOfNotNull(
-            slider("bitRate", "Bitrate", "Calidad del video", 0, 20, 1, " Mbps", "automático"),
-            slider("fps", "Cuadros por segundo", "", 0, 60, 5, " fps", "automático"),
-            slider("ScreenDPI", "DPI de pantalla", "Tamaño de la interfaz", 0, 480, 10, "", "predeterminado"),
-            choice("displaySize", "Tamaño de iconos", "", listOf(0 to "Predeterminado", 1 to "Pequeño", 2 to "Mediano", 3 to "Grande")),
-            sw("gps", "GPS del dongle (GNSS)", "Comparte la ubicación con el carro"),
+            slider("bitRate", "Bitrate del video", "Menos = más fluido: si hay trabas o retraso, por debajo de 8 Mbps. Más = calidad más estable: por encima de 8 Mbps", 0, 20, 1, " Mbps", "automático"),
+            slider("fps", "Cuadros por segundo", "Si la pantalla se ve con mucho retraso, prueba con 20", 0, 60, 5, " fps", "automático"),
+            slider("ScreenDPI", "DPI de pantalla", "", 0, 480, 10, "", "predeterminado"),
+            choice("displaySize", "Estilo de pantalla (tamaño)", "", listOf(0 to "Predeterminado", 1 to "Pequeño", 2 to "Mediano", 3 to "Grande")),
+            choice("autoDisplay", "Pantalla automática", "", listOf(0 to "Normal", 1 to "Automática")),
+            choice("transMode", "Modo de transferencia", "", listOf(0 to "Normal", 1 to "Compatible")),
+            sw("gps", "GPS", "El GPS del carro se sincroniza con el celular"),
+            sw("mouseMode", "Modo cursor", "Muestra un cursor en carros con touchpad; tocar tres veces alterna deslizar y arrastrar"),
+            sw("KnobMode", "Modo perilla", ""),
+            sw("autoRefresh", "Refresco automático", ""),
+            sw("backRecording", "Grabación en segundo plano", ""),
         )
         if (video.isNotEmpty()) { if (!has("resolutionWidth")) item { SectionTitle("Video") }; item { Group(video) } }
 
-        // ---- Experimental ------------------------------------------------------------------------
-        // The firmware exposes these but their visible effect depends on the car and on CarPlay vs Android Auto.
-        val experimental = listOfNotNull(
-            sw("mediaSound", "Sonido multimedia", "Categoría de audio multimedia del dongle"),
-            sw("squareCorner", "Esquinas cuadradas", "Solo afecta a la imagen en CarPlay / pantallas que lo usan"),
-            sw("bgMode", "Modo segundo plano", "Comportamiento al volver a la pantalla del carro"),
-            sw("syncMode", "Sincronizar hora", "El dongle toma la hora del celular"),
-            choice("autoDisplay", "Modo de pantalla", "", listOf(0 to "Normal", 1 to "Vehículo")),
-            choice("transMode", "Modo de transferencia", "", listOf(0 to "Normal", 1 to "Compatible")),
-            sw("autoRefresh", "Refresco automático", ""),
-            sw("mouseMode", "Modo ratón", ""),
-            sw("KnobMode", "Modo perilla", ""),
-            sw("backRecording", "Grabación en segundo plano", ""),
+        // ---- Undocumented ------------------------------------------------------------------------
+        val undocumented = listOfNotNull(
+            sw("mediaSound", "Sonido multimedia", "El firmware lo reporta, pero la interfaz oficial del dongle no lo describe"),
+            sw("squareCorner", "Esquinas cuadradas", "Apareció con el firmware 2025.12; sin descripción oficial ni efecto visible en Android Auto"),
         )
-        if (experimental.isNotEmpty()) {
-            item { SectionTitle("Experimentales") }
+        if (undocumented.isNotEmpty()) {
+            item { SectionTitle("Sin documentar") }
             item {
-                Text("Los expone el firmware, pero no siempre se nota algo al cambiarlos (depende del carro y de si usas CarPlay o Android Auto). Si no ves efecto, déjalos como estaban.",
+                Text("El dongle los expone pero no los describe. Si no notas efecto, déjalos como estaban.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
             }
-            item { Group(experimental) }
+            item { Group(undocumented) }
         }
 
         // ---- WiFi --------------------------------------------------------------------------------
