@@ -244,5 +244,14 @@ object Prefs {
         sp(c).getStringSet("known_names", emptySet())?.firstOrNull { Presence.hash(it) == h }
     fun autoAccept(c: Context) = sp(c).getBoolean("auto_accept", false)
     fun setAutoAccept(c: Context, v: Boolean) = sp(c).edit().putBoolean("auto_accept", v).apply()
+    // Passenger hotspot (informational + QR; Android only lets privileged apps change the real hotspot).
+    fun hotspotRemind(c: Context) = sp(c).getBoolean("hs_remind", false)
+    fun setHotspotRemind(c: Context, v: Boolean) = sp(c).edit().putBoolean("hs_remind", v).apply()
+    fun hotspotName(c: Context) = sp(c).getString("hs_name", "Carro-WiFi") ?: "Carro-WiFi"
+    fun setHotspotName(c: Context, v: String) = sp(c).edit().putString("hs_name", v).apply()
+    fun hotspotSecure(c: Context) = sp(c).getBoolean("hs_secure", true)
+    fun setHotspotSecure(c: Context, v: Boolean) = sp(c).edit().putBoolean("hs_secure", v).apply()
+    fun hotspotPass(c: Context) = sp(c).getString("hs_pass", "") ?: ""
+    fun setHotspotPass(c: Context, v: String) = sp(c).edit().putString("hs_pass", v).apply()
     fun setAggressive(c: Context, v: Boolean) = sp(c).edit().putBoolean("aggressive_switch", v).apply()
 }

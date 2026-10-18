@@ -53,6 +53,8 @@ fun SettingsTab(c: Ctl, aggressive: Boolean, onAggressive: (Boolean) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { ScreenTitle("Ajustes", "Solo aparece lo que tu firmware permite cambiar", c.refresh) }
+        item { SectionTitle("Internet para pasajeros") }
+        item { HotspotCard(c) }
         if (s == null) {
             item { OfflineCard(loading = false, error = "Conecta el celular al WiFi del dongle (AutoKit_xx).") }
             return@LazyColumn

@@ -12,3 +12,5 @@
 | Distancia BLE | Unos 10–30 m | Suficiente dentro del carro |
 | Firmware | Cada actualización del dongle puede ocultar ajustes o cambiar nombres | La app usa solo los campos presentes |
 | Android 12+ | Permisos `BLUETOOTH_SCAN/ADVERTISE/CONNECT` y notificaciones | Se piden al abrir la app |
+| Hotspot automático | Android no deja que una app encienda el hotspot ni cambie su nombre/clave; se necesitan permisos `TETHER_PRIVILEGED` / `NETWORK_SETTINGS` (los tiene el usuario `shell` de `adb`, no una app) | La app guarda los datos, muestra el QR y abre la pantalla del hotspot. Camino a futuro: ejecutar con **Shizuku** (activado por depuración inalámbrica en cada arranque) y llamar a `TetheringManager.startTethering` y `WifiManager.setSoftApConfiguration`; no implementado ni probado en Android 17 |
+| Internet por el WiFi del dongle | El celular es cliente del dongle; Android no reenvía tráfico a otros clientes de esa red sin hotspot | Hotspot del celular, router 4G, o un firmware modificado que haga de puente (sin NAT confirmado en el firmware) |
