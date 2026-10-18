@@ -32,6 +32,8 @@ class PresenceService : Service() {
     private var dismissedFor: String? = null
     private var lastMonitorAt = 0L
     private var lastHotAlertAt = 0L
+    private var lastMemCheckAt = 0L
+    private var lastMemAlertAt = 0L
 
     private val tick = object : Runnable {
         override fun run() { evaluate(); main.postDelayed(this, 3000) }
@@ -96,7 +98,7 @@ class PresenceService : Service() {
             if (active) { nm.cancel(ID_OFFER); offeredFor = null; if (Presence.reqState.phase != Presence.ReqPhase.IDLE) Presence.clearRequest(this) }
             SwitchTileService.refresh(this)
         }
-        if (active) checkDongleTemperature()
+        if (active) { checkDongleTemperature(); checkPhoneMemory() }
         if (!active) {
             val other = Presence.activeOthers().firstOrNull()
             if (other == null) {
@@ -148,6 +150,22 @@ class PresenceService : Service() {
                 }
             }
         }.start()
+    }
+
+    /** While projecting, warn when this phone is out of memory: Android Auto lags and drops touches. */
+    private fun checkPhoneMemory() {
+        val now = System.currentTimeMillis()
+        if (now - lastMemCheckAt < 60_000) return
+        lastMemCheckAt = now
+        val m = PhoneHealth.read() ?: return
+        if (m.critical && now - lastMemAlertAt > 30 * 60_000L) {
+            lastMemAlertAt = now
+            resultNotification(
+                "Este celular va justo de memoria",
+                "RAM libre ${m.ramFreePct} % y swap usado ${m.swapUsedPct} %. Android Auto puede ir lento o no aceptar toques: cierra apps pesadas o reinicia el celular.",
+                retry = false,
+            )
+        }
     }
 
     private fun foregroundNotification(active: Boolean): Notification {

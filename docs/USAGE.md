@@ -90,6 +90,10 @@ Solo aparecen los ajustes que **tu firmware** reporta (como en la web del dongle
 
 Lee `BoxMonitor` cada 2 s y lo muestra en **gráficas de torta (donut)**: CPU, memoria, temperatura (escala 0–100 °C) y WiFi (recibido vs enviado). Colores: verde < 60 °C, ámbar 60–75 °C, rojo ≥ 75 °C; CPU y memoria cambian a ámbar/rojo cuando se saturan. Con Android Auto activo, si el dongle llega a 75 °C el celular avisa con una notificación (máximo una cada 10 minutos).  El tráfico WiFi está en **Mbps** (igual que la web del dongle).
 
+### Este celular (memoria)
+
+Arriba del Monitor, **RAM libre** y **swap en uso** del propio celular. Un celular con poca RAM libre y el swap casi lleno hace que Android Auto vaya lento y **no acepte toques** (el sistema pasa el tiempo reclamando memoria). Con Android Auto activo, si la RAM libre baja de 20 % y el swap pasa de 85 %, la app avisa con una notificación (máximo una cada 30 minutos). Cómo arreglarlo: cerrar apps pesadas, reiniciar el celular, o bajar la carga de video del dongle (resolución, bitrate, FPS).
+
 ## Herramientas
 
 - **Logo del carro:** elige una imagen; se recorta al centro, se reduce a 180×180 PNG (máx. 100 KB) y se sube a `upload.cgi`. Reinicia el dongle para verlo. *Volver al logo original* usa `resetLogo`.

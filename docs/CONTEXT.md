@@ -59,6 +59,11 @@ Compose con menú inferior (Celulares · Ajustes · Monitor · Herramientas), aj
 
 Se quiso compartir los datos del celular con todo el carro. Hallazgos: el Pixel soporta WiFi cliente + hotspot a la vez (`AP_STA`), pero una app normal **no puede encender el hotspot ni fijar su nombre/clave**. Se hizo una tarjeta con nombre, contraseña, QR y botón en la notificación; como la configuración seguía siendo manual no aportaba nada y **se eliminó**. Caminos que quedan abiertos: Shizuku (automático, requiere activarlo en cada arranque), router 4G con SIM, o un firmware modificado que convierta al dongle en puente (en el firmware público del dongle se ven `hostapd`, `wpa_supplicant` y `udhcpd`, pero no `iptables`).
 
+### 9. Un celular nuevo que no conectaba y luego iba lento
+
+- **No conectaba:** los registros de Android Auto mostraban `WIRELESS_SETUP_FAILED_TO_START_NO_HFP_FROM_HU_PRESENCE`: el Bluetooth con el dongle se cortaba a los ~2 s y Android Auto inalámbrico necesita el perfil manos libres (HFP) del dongle. El dongle atiende un solo Bluetooth a la vez; al apagar el Bluetooth de los otros celulares, olvidar el emparejamiento y volver a emparejar (con "Llamadas telefónicas" activas) conectó.
+- **Iba lento:** con el celular proyectando, el enlace era sano (acuses de audio ~23 ms, WiFi 5 GHz a 270–300 Mbps), pero el celular tenía la RAM casi agotada y el **swap al 92 %**, `system_server` al 94 % de CPU y el limitador de cuadros de Android Auto alternando 60 ↔ 30 fps. Un Pixel 9 con 11 GB iba sobrado. Por eso la app ahora mide la memoria del celular.
+
 ## Errores que ya se pagaron (para no repetirlos)
 
 | Error | Causa | Solución |

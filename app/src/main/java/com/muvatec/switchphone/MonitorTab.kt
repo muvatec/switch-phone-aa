@@ -48,6 +48,8 @@ private val BLUE = Color(0xFF2B8CFF)
 fun MonitorTab(c: Ctl) {
     var now by remember { mutableStateOf<Monitor?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    var mem by remember { mutableStateOf(PhoneHealth.read()) }
+    LaunchedEffect(Unit) { while (true) { mem = PhoneHealth.read(); delay(2000) } }
 
     LaunchedEffect(c.state != null) {
         while (true) {
@@ -63,7 +65,10 @@ fun MonitorTab(c: Ctl) {
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item { ScreenTitle("Monitor", "Estado del dongle en vivo", null) }
+        item { ScreenTitle("Monitor", "Este celular y el dongle en vivo", null) }
+        mem?.let { pm ->
+            item { PhoneCard(pm) }
+        }
         val m = now
         if (m == null) {
             item { OfflineCard(loading = error == null, error = error ?: "Conecta el celular al WiFi del dongle (AutoKit_xx).") }
@@ -162,5 +167,35 @@ private fun Legend(color: Color, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(10.dp).background(color, androidx.compose.foundation.shape.CircleShape))
         Text(text, Modifier.padding(start = 6.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun PhoneCard(pm: PhoneMem) {
+    val ramColor = when { pm.ramFreePct < 10 -> HOT; pm.ramFreePct < 20 -> WARN; else -> OK }
+    val swapColor = when { pm.swapUsedPct > 85 -> HOT; pm.swapUsedPct > 70 -> WARN; else -> OK }
+    SoftCard {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Este celular", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.weight(1f)) {
+                    ChartCard("RAM libre", "${pm.availMb} de ${pm.totalMb} MB") {
+                        Donut(listOf(pm.ramFreePct / 100f to ramColor), "${pm.ramFreePct}%")
+                    }
+                }
+                Box(Modifier.weight(1f)) {
+                    ChartCard("Swap en uso", "${pm.swapTotalMb - pm.swapFreeMb} de ${pm.swapTotalMb} MB") {
+                        Donut(listOf(pm.swapUsedPct / 100f to swapColor), "${pm.swapUsedPct}%")
+                    }
+                }
+            }
+            val msg = when {
+                pm.critical -> "Memoria casi agotada: Android Auto puede ir lento y no aceptar toques. Cierra apps pesadas o reinicia el celular."
+                pm.warning -> "Memoria justa. Si Android Auto se pone lento, cierra apps en segundo plano."
+                else -> "Memoria en buen estado."
+            }
+            Text(msg, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold,
+                color = if (pm.critical) HOT else if (pm.warning) WARN else MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
