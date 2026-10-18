@@ -57,6 +57,16 @@ La `2025.12.29.1746` de este dongle es **más nueva que cualquier imagen públic
 
 Este repositorio **no incluye imágenes de firmware** (son del fabricante).
 
+## Comprobar si hay actualización
+
+En la web del dongle (`http://192.168.50.2/#/help`) hay tres acciones: **Check Update**, **Specified Ver** (instalar una versión concreta) y **Rollback**. Las tres consultan la nube del fabricante y mandan los identificadores del dongle, por eso Switch Phone no las usa; hazlas tú desde esa pantalla.
+
+| Fecha | Versión instalada | Resultado de *Check Update* |
+|---|---|---|
+| 2026-10-18 | `2025.12.29.1746` | "Already The Latest Version" |
+
+La web también muestra *Hardware Ver* en otro formato (`U2AC35800`), la *Initial Ver* (`20240321`) y el UUID del dongle (no se publica).
+
 ## Cómo se actualiza (vías oficiales)
 
 1. **Desde el propio dongle:** el celular se conecta al WiFi del dongle, abre `http://192.168.50.2` y, si hay versión nueva, la interfaz la ofrece (descarga desde la nube del fabricante y sube la imagen a `upload.cgi`).

@@ -78,7 +78,7 @@ Solo aparecen los ajustes que **tu firmware** reporta (como en la web del dongle
 
 ## Monitor
 
-Lee `BoxMonitor` cada 2 s y lo muestra en **gráficas de torta (donut)**: CPU, memoria, temperatura (escala 0–100 °C) y WiFi (recibido vs enviado). Colores: verde < 60 °C, ámbar 60–75 °C, rojo ≥ 75 °C; CPU y memoria cambian a ámbar/rojo cuando se saturan. Con Android Auto activo, si el dongle llega a 75 °C el celular avisa con una notificación (máximo una cada 10 minutos). Las unidades de tráfico WiFi las entrega el dongle sin etiqueta; se muestran tal cual.
+Lee `BoxMonitor` cada 2 s y lo muestra en **gráficas de torta (donut)**: CPU, memoria, temperatura (escala 0–100 °C) y WiFi (recibido vs enviado). Colores: verde < 60 °C, ámbar 60–75 °C, rojo ≥ 75 °C; CPU y memoria cambian a ámbar/rojo cuando se saturan. Con Android Auto activo, si el dongle llega a 75 °C el celular avisa con una notificación (máximo una cada 10 minutos).  El tráfico WiFi está en **Mbps** (igual que la web del dongle).
 
 ## Herramientas
 

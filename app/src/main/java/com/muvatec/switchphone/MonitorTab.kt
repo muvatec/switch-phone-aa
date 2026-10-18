@@ -97,10 +97,10 @@ fun MonitorTab(c: Ctl) {
                 }
                 Box(Modifier.weight(1f)) {
                     val total = m.rx + m.tx
-                    ChartCard("WiFi", "↓ %.2f   ↑ %.2f".format(m.rx, m.tx)) {
+                    ChartCard("WiFi (Mbps)", "↓ %.1f   ↑ %.1f".format(m.rx, m.tx)) {
                         if (total > 0.0) Donut(
                             listOf((m.rx / total).toFloat() to OK, (m.tx / total).toFloat() to BLUE),
-                            "%.2f".format(total),
+                            "%.0f".format(total),
                         ) else Donut(emptyList(), "0")
                     }
                 }
@@ -114,8 +114,7 @@ fun MonitorTab(c: Ctl) {
         }
         item {
             Text(
-                "Se actualiza cada 2 s. Si la temperatura llega a 75 °C con Android Auto activo, el celular avisa con una notificación. " +
-                    "El tráfico WiFi se muestra en las unidades que entrega el dongle.",
+                "Se actualiza cada 2 s. Si la temperatura llega a 75 °C con Android Auto activo, el celular avisa con una notificación.",
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 4.dp),
             )

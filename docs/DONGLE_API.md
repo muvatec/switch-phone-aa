@@ -38,7 +38,7 @@ Una firma incorrecta o un formato multipart mal formado responde `400 Bad Reques
 | `restart` | — | `{"err":0}` y el dongle reinicia (~20 s) |
 | `reset` | — | Restaura valores de fábrica. **No usar a la ligera** |
 | `resetApp` | — | Restaura la app |
-| `BoxMonitor` | — | `{"BoxMonitor":{"CpuRate","CpuTemp","CpuFreq","MemRate","WifiRX","WifiTX"}}` |
+| `BoxMonitor` | — | `{"BoxMonitor":{"CpuRate","CpuTemp","CpuFreq","MemRate","WifiRX","WifiTX"}}` (`WifiRX/TX` en **Mbps**, `CpuTemp` en °C) |
 | `upgradeState` | — | `{"err":0,"progress":0,"failReason":0}` |
 | `carInfo` | `brand`, `model`, `year`, `userid` | Datos del carro |
 | `syncTime` | — | Sincroniza hora |
