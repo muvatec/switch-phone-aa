@@ -212,13 +212,11 @@ fun DongleApp() {
                     ) {
             item { ScreenTitle("Switch Phone", "Elige qué celular usa Android Auto") { refresh() } }
 
-                item {
-                    val here = Presence.selfProjecting; @Suppress("UNUSED_EXPRESSION") tick
+                @Suppress("UNUSED_EXPRESSION") tick
+                if (!Presence.selfProjecting) item {
                     SoftCard {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            if (here) {
-                                Text("Este celular está activo en el carro", fontWeight = FontWeight.Bold, color = Active)
-                            } else {
+                            run {
                                 val other = Presence.activeOthers().firstOrNull()?.let { Prefs.nameForHash(ctx, it) ?: "Otro celular" }
                                 val btOn = Presence.bluetoothOn(ctx)
                                 val perms = Presence.hasPermissions(ctx)
@@ -263,20 +261,6 @@ fun DongleApp() {
                                             Text(if (rs.phase == Presence.ReqPhase.IDLE) "Solicitar conexión" else "Reintentar")
                                         }
                                     }
-                                }
-                            }
-                            if (android.os.Build.VERSION.SDK_INT >= 33) {
-                                val added = Prefs.tileAdded(ctx)
-                                OutlinedButton(enabled = !added, onClick = {
-                                    val sb = ctx.getSystemService(android.app.StatusBarManager::class.java)
-                                    sb.requestAddTileService(android.content.ComponentName(ctx, SwitchTileService::class.java), "Switch Phone",
-                                        android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_swap), ctx.mainExecutor) { result ->
-                                        // 1 = already added, 2 = added
-                                        if (result == 1 || result == 2) Prefs.setTileAdded(ctx, true)
-                                    }
-                                }, modifier = Modifier.fillMaxWidth()) {
-                                    Icon(if (added) Icons.Filled.Check else Icons.Filled.Add, null); Spacer(Modifier.size(8.dp))
-                                    Text(if (added) "Botón ya añadido al panel rápido" else "Añadir botón al panel rápido")
                                 }
                             }
                         }

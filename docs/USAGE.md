@@ -41,7 +41,7 @@ El celular inactivo también recibe un aviso automático **"Cambiar a este celul
 Abre **Switch Phone** en el lanzador y toca la tarjeta del celular destino → **Cambiar**.
 
 ### Con un toque
-- **Panel rápido:** en la app, **Añadir botón al panel rápido**. El tile "Switch Phone" pide el control.
+- **Panel rápido:** en **Ajustes → Este celular**, **Añadir botón al panel rápido** (queda desactivado con ✓ cuando ya está añadido). El tile "Switch Phone" pide el control.
 - **Atajo del ícono:** mantén pulsado el ícono de la app → **Usar este celular**.
 
 ## Celular activo

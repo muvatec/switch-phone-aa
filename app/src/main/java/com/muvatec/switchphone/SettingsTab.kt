@@ -9,7 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
@@ -53,6 +57,8 @@ fun SettingsTab(c: Ctl, aggressive: Boolean, onAggressive: (Boolean) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { ScreenTitle("Ajustes", "Solo aparece lo que tu firmware permite cambiar", c.refresh) }
+        item { SectionTitle("Este celular") }
+        item { ThisPhoneCard(c) }
         if (s == null) {
             item { OfflineCard(loading = false, error = "Conecta el celular al WiFi del dongle (AutoKit_xx).") }
             return@LazyColumn
@@ -284,5 +290,42 @@ private fun SliderSetting(c: Ctl, key: String, title: String, sub: String, min: 
             valueRange = min.toFloat()..max.toFloat(),
             onValueChangeFinished = { val n = v.roundToInt(); c.act("$title: $n$unit") { c.client.set(key, n) } },
         )
+    }
+}
+
+/** Status of this phone in the car and the Quick Settings button. */
+@Composable
+private fun ThisPhoneCard(c: Ctl) {
+    val ctx = c.ctx
+    val active = Presence.selfProjecting
+    SoftCard {
+        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("En el carro", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(if (active) "Este celular está activo" else "Este celular no está conectado al carro",
+                    fontWeight = FontWeight.Bold, color = if (active) Active else MaterialTheme.colorScheme.onSurface)
+            }
+        }
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = .4f))
+            val added = Prefs.tileAdded(ctx)
+            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Botón del panel rápido", fontWeight = FontWeight.SemiBold)
+                Text("Un toque desde el panel de Android para pedir el carro (o ver que ya lo tienes).",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                OutlinedButton(enabled = !added, onClick = {
+                    val sb = ctx.getSystemService(android.app.StatusBarManager::class.java)
+                    sb.requestAddTileService(android.content.ComponentName(ctx, SwitchTileService::class.java), "Switch Phone",
+                        android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_swap), ctx.mainExecutor) { result ->
+                        // 1 = already added, 2 = added
+                        if (result == 1 || result == 2) Prefs.setTileAdded(ctx, true)
+                    }
+                }, modifier = Modifier.fillMaxWidth()) {
+                    androidx.compose.material3.Icon(if (added) androidx.compose.material.icons.Icons.Filled.Check else androidx.compose.material.icons.Icons.Filled.Add, null)
+                    androidx.compose.foundation.layout.Spacer(Modifier.size(8.dp))
+                    Text(if (added) "Botón ya añadido al panel rápido" else "Añadir botón al panel rápido")
+                }
+            }
+        }
     }
 }
