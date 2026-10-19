@@ -122,6 +122,8 @@ Para verlo sin un segundo celular: con el celular conectado al carro, **Herramie
 
 ## Problemas comunes
 
+Antes de nada: **el Bluetooth y los permisos de Bluetooth tienen que estar activos en todos los celulares.** Sin eso un celular no ve quién usa el carro, no puede pedirlo ni recibe el aviso de cambio. La pantalla *Celulares* lo dice ("El Bluetooth está apagado…", "Faltan permisos…") con un botón para arreglarlo, y la app vuelve a empezar sola cuando se enciende el Bluetooth.
+
 | Síntoma | Causa y solución |
 |---|---|
 | "Sin conexión con el dongle" en la app | El celular no está en el WiFi del dongle. Fuera del carro, conéctate a `AutoKit_xx` |

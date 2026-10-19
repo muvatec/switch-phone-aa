@@ -35,6 +35,15 @@ class PresenceService : Service() {
     private var lastMemCheckAt = 0L
     private var lastMemAlertAt = 0L
 
+    private val btReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: Context, i: Intent) {
+            when (i.getIntExtra(android.bluetooth.BluetoothAdapter.EXTRA_STATE, -1)) {
+                android.bluetooth.BluetoothAdapter.STATE_ON -> { CarLog.log(c, "bluetooth on: starting presence"); Presence.start(c) }
+                android.bluetooth.BluetoothAdapter.STATE_TURNING_OFF -> { CarLog.log(c, "bluetooth off: stopping presence"); Presence.stop(c) }
+            }
+        }
+    }
+
     private val tick = object : Runnable {
         override fun run() { evaluate(); main.postDelayed(this, 3000) }
     }
@@ -51,6 +60,7 @@ class PresenceService : Service() {
         if (Build.VERSION.SDK_INT >= 29) startForeground(ID_FG, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
         else startForeground(ID_FG, n)
         Presence.start(this)
+        registerReceiver(btReceiver, android.content.IntentFilter(android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED))
         Presence.onRequest = { h -> handleRequest(h) }
         Presence.onResult = { st -> showResult(st) }
         CarConnection(this).type.observeForever { t ->
@@ -83,6 +93,7 @@ class PresenceService : Service() {
 
     override fun onDestroy() {
         main.removeCallbacks(tick)
+        runCatching { unregisterReceiver(btReceiver) }
         Presence.onRequest = null
         Presence.onResult = null
         Presence.stop(this)
@@ -92,6 +103,7 @@ class PresenceService : Service() {
     // ---- state ------------------------------------------------------------------------------
 
     private fun evaluate() {
+        if (!Presence.isRunning && Presence.bluetoothOn(this) && Presence.hasPermissions(this)) Presence.start(this)
         val nm = getSystemService(NotificationManager::class.java)
         val active = Presence.selfProjecting
         if (active != lastActive) {

@@ -68,6 +68,10 @@ Se quiso compartir los datos del celular con todo el carro. Hallazgos: el Pixel 
 
 Probada en un carro real con el Pixel 9 y "Fuentes desconocidas" activo, **Switch Phone no salía** en las apps del carro ni en "Personalizar lanzador". En el DHU sí. El log del sistema (256 KB) ya no tenía la sesión del viaje, así que no se pudo ver el motivo. Hipótesis: Android Auto es más estricto con la categoría **navegación** para apps instaladas por APK (otras apps de navegación sin Play Store reportan lo mismo). Acciones: segunda entrada en categoría IoT con plantillas, y registro persistente `CarLog` para tener evidencia en el siguiente intento.
 
+### 11. "No carga nada para solicitar conexión"
+
+En el segundo celular la pantalla cargaba pero no ofrecía pedir el carro ni llegaba el aviso. Causa: **su Bluetooth estaba apagado** (se había apagado durante la prueba del tercer celular) y la presencia BLE solo arrancaba una vez al abrir la app, así que nunca se recuperaba al encenderlo y la pantalla no avisaba. Ahora la presencia se reinicia con el Bluetooth (receptor de cambio de estado y reintento periódico) y la pantalla muestra "Bluetooth apagado" / "Faltan permisos" / "Buscando… no veo ningún otro celular".
+
 ## Errores que ya se pagaron (para no repetirlos)
 
 | Error | Causa | Solución |

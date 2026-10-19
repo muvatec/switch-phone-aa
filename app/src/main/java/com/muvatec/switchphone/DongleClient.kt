@@ -248,5 +248,7 @@ object Prefs {
     fun setAutoAccept(c: Context, v: Boolean) = sp(c).edit().putBoolean("auto_accept", v).apply()
     fun cacheBtName(c: Context, v: String) { if (v.isNotBlank()) sp(c).edit().putString("bt_name", v).apply() }
     fun lastBtName(c: Context) = sp(c).getString("bt_name", "") ?: ""
+    fun tileAdded(c: Context) = sp(c).getBoolean("tile_added", false)
+    fun setTileAdded(c: Context, v: Boolean) = sp(c).edit().putBoolean("tile_added", v).apply()
     fun setAggressive(c: Context, v: Boolean) = sp(c).edit().putBoolean("aggressive_switch", v).apply()
 }

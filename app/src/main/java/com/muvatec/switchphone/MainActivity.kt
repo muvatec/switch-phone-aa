@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MoreVert
@@ -219,9 +220,26 @@ fun DongleApp() {
                                 Text("Este celular está activo en el carro", fontWeight = FontWeight.Bold, color = Active)
                             } else {
                                 val other = Presence.activeOthers().firstOrNull()?.let { Prefs.nameForHash(ctx, it) ?: "Otro celular" }
-                                if (other == null && Presence.reqState.phase == Presence.ReqPhase.IDLE)
-                                    Text("Nadie está usando el carro (o su celular está lejos). Conecta Android Auto normalmente.",
+                                val btOn = Presence.bluetoothOn(ctx)
+                                val perms = Presence.hasPermissions(ctx)
+                                if (!perms) {
+                                    Text("Faltan permisos de Bluetooth: sin ellos no puedo ver quién usa el carro ni pedirlo.", color = Color(0xFFE5A100), fontWeight = FontWeight.SemiBold)
+                                    OutlinedButton(onClick = {
+                                        val req = Presence.requiredPermissions().toMutableList()
+                                        if (android.os.Build.VERSION.SDK_INT >= 33) req += android.Manifest.permission.POST_NOTIFICATIONS
+                                        permLauncher.launch(req.toTypedArray())
+                                    }, modifier = Modifier.fillMaxWidth()) { Text("Dar permisos") }
+                                } else if (!btOn) {
+                                    Text("El Bluetooth está apagado: así no puedo ver quién usa el carro ni pedirlo.", color = Color(0xFFE5A100), fontWeight = FontWeight.SemiBold)
+                                    OutlinedButton(onClick = {
+                                        runCatching { ctx.startActivity(android.content.Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE)) }
+                                    }, modifier = Modifier.fillMaxWidth()) { Text("Activar Bluetooth") }
+                                } else if (other == null && Presence.reqState.phase == Presence.ReqPhase.IDLE) {
+                                    Text(
+                                        if (Presence.heardCount() == 0) "Buscando por Bluetooth… no veo ningún otro celular con Switch Phone. Si el carro está encendido, ábrela también en el otro celular."
+                                        else "Hay ${Presence.heardCount()} celular(es) cerca, pero ninguno está usando el carro ahora.",
                                         color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
                                 val rs = Presence.reqState
                                 val who = Prefs.nameForHash(ctx, rs.targetHash) ?: other ?: "El otro celular"
                                 when (rs.phase) {
@@ -248,12 +266,17 @@ fun DongleApp() {
                                 }
                             }
                             if (android.os.Build.VERSION.SDK_INT >= 33) {
-                                OutlinedButton(onClick = {
+                                val added = Prefs.tileAdded(ctx)
+                                OutlinedButton(enabled = !added, onClick = {
                                     val sb = ctx.getSystemService(android.app.StatusBarManager::class.java)
                                     sb.requestAddTileService(android.content.ComponentName(ctx, SwitchTileService::class.java), "Switch Phone",
-                                        android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_swap), ctx.mainExecutor) { }
-                                }, Modifier.fillMaxWidth()) {
-                                    Icon(Icons.Filled.Add, null); Spacer(Modifier.size(8.dp)); Text("Añadir botón al panel rápido")
+                                        android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_swap), ctx.mainExecutor) { result ->
+                                        // 1 = already added, 2 = added
+                                        if (result == 1 || result == 2) Prefs.setTileAdded(ctx, true)
+                                    }
+                                }, modifier = Modifier.fillMaxWidth()) {
+                                    Icon(if (added) Icons.Filled.Check else Icons.Filled.Add, null); Spacer(Modifier.size(8.dp))
+                                    Text(if (added) "Botón ya añadido al panel rápido" else "Añadir botón al panel rápido")
                                 }
                             }
                         }

@@ -55,6 +55,17 @@ object Presence {
     @Volatile var onRequest: ((String) -> Unit)? = null
 
     val selfProjecting: Boolean get() = projecting
+    val isRunning: Boolean get() = started
+
+    /** Bluetooth adapter on? */
+    fun bluetoothOn(ctx: Context): Boolean =
+        runCatching { (ctx.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter?.isEnabled == true }.getOrDefault(false)
+
+    /** How many other phones' beacons were heard recently. */
+    fun heardCount(): Int {
+        val now = System.currentTimeMillis()
+        return seen.filter { it.key != selfHash && now - it.value.at < FRESH_MS }.size
+    }
     val selfHash: String get() = hash(myName)
     private val requesting: Boolean get() = !projecting && System.currentTimeMillis() < requestingUntil
 

@@ -7,7 +7,9 @@ import android.content.Context
 
 /** Quick Settings tile: one tap to make this phone the one used by the car. */
 class SwitchTileService : TileService() {
-    override fun onStartListening() { update() }
+    override fun onTileAdded() { Prefs.setTileAdded(this, true) }
+    override fun onTileRemoved() { Prefs.setTileAdded(this, false) }
+    override fun onStartListening() { Prefs.setTileAdded(this, true); update() }
 
     override fun onClick() {
         if (!Presence.selfProjecting) PresenceService.requestHere(this)
