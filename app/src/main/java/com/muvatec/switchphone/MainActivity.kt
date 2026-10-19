@@ -211,10 +211,6 @@ fun DongleApp() {
                     ) {
             item { ScreenTitle("Switch Phone", "Elige qué celular usa Android Auto") { refresh() } }
 
-            if (s == null) {
-                item { OfflineCard(loading = loading, error = error) }
-            } else {
-                item { DongleCard(s) }
                 item {
                     val here = Presence.selfProjecting; @Suppress("UNUSED_EXPRESSION") tick
                     SoftCard {
@@ -223,6 +219,9 @@ fun DongleApp() {
                                 Text("Este celular está activo en el carro", fontWeight = FontWeight.Bold, color = Active)
                             } else {
                                 val other = Presence.activeOthers().firstOrNull()?.let { Prefs.nameForHash(ctx, it) ?: "Otro celular" }
+                                if (other == null && Presence.reqState.phase == Presence.ReqPhase.IDLE)
+                                    Text("Nadie está usando el carro (o su celular está lejos). Conecta Android Auto normalmente.",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 val rs = Presence.reqState
                                 val who = Prefs.nameForHash(ctx, rs.targetHash) ?: other ?: "El otro celular"
                                 when (rs.phase) {
@@ -241,7 +240,7 @@ fun DongleApp() {
                                             Text("$who no respondió", fontWeight = FontWeight.Bold, color = Color(0xFFE5A100))
                                         else if (other != null)
                                             Text("$other está usando el carro", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Button(onClick = { PresenceService.requestHere(ctx) }, Modifier.fillMaxWidth()) {
+                                        Button(enabled = other != null || rs.phase != Presence.ReqPhase.IDLE, onClick = { PresenceService.requestHere(ctx) }, modifier = Modifier.fillMaxWidth()) {
                                             Icon(Icons.Filled.SwapHoriz, null); Spacer(Modifier.size(8.dp))
                                             Text(if (rs.phase == Presence.ReqPhase.IDLE) "Solicitar conexión" else "Reintentar")
                                         }
@@ -261,6 +260,26 @@ fun DongleApp() {
                     }
                 }
 
+
+            if (s == null) {
+                item { OfflineCard(loading = loading, error = error) }
+                // Not on the dongle's WiFi: still show who is using the car and who is around, using Bluetooth presence only.
+                val known = Prefs.knownNames(ctx).sorted()
+                if (known.isNotEmpty()) {
+                    item { SectionTitle("Celulares conocidos") }
+                    items(known, key = { it }) { n ->
+                        val me = n.trim().equals(Presence.myName.trim(), ignoreCase = true)
+                        val st = when {
+                            Presence.isActive(n) -> PhoneStatus.CONNECTED
+                            Presence.isNearby(n) || me -> PhoneStatus.NEARBY
+                            else -> PhoneStatus.SAVED
+                        }
+                        val tickRead = tick
+                        SimplePhoneRow(if (me) "$n (este celular)" else n, st)
+                    }
+                }
+            } else {
+                item { DongleCard(s) }
                 item {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.weight(1f)) { SectionTitle("Celulares") }
@@ -529,5 +548,26 @@ fun NameRow(icon: ImageVector, label: String, value: String, onEdit: () -> Unit)
             Text(value.ifBlank { "—" }, fontWeight = FontWeight.SemiBold)
         }
         Icon(Icons.Filled.Edit, "Editar", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+    }
+}
+
+@Composable
+private fun SimplePhoneRow(name: String, status: PhoneStatus) {
+    val accent = status.color()
+    Card(shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = if (status == PhoneStatus.CONNECTED) BorderStroke(2.dp, accent) else null, modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(44.dp).clip(CircleShape).background(accent.copy(alpha = .16f)), contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.Smartphone, null, tint = accent, modifier = Modifier.size(24.dp))
+            }
+            Spacer(Modifier.size(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(name, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                Text(status.detail(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Surface(shape = RoundedCornerShape(50), color = accent.copy(alpha = .16f)) {
+                Text(status.title(), color = accent, fontWeight = FontWeight.Bold, fontSize = 11.sp, modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp))
+            }
+        }
     }
 }

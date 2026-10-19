@@ -128,8 +128,8 @@ fun MonitorTab(c: Ctl) {
 }
 
 @Composable
-private fun ChartCard(title: String, caption: String, captionColor: Color? = null, chart: @Composable () -> Unit) {
-    SoftCard {
+private fun ChartCard(title: String, caption: String, captionColor: Color? = null, flat: Boolean = false, chart: @Composable () -> Unit) {
+    val body: @Composable () -> Unit = {
         Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             chart()
@@ -137,6 +137,7 @@ private fun ChartCard(title: String, caption: String, captionColor: Color? = nul
                 color = captionColor ?: MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         }
     }
+    if (flat) body() else SoftCard { body() }
 }
 
 /** Donut made of consecutive arcs; each pair is (share of the full circle 0..1, color). */
@@ -172,19 +173,19 @@ private fun Legend(color: Color, text: String) {
 
 @Composable
 private fun PhoneCard(pm: PhoneMem) {
-    val ramColor = when { pm.ramFreePct < 10 -> HOT; pm.ramFreePct < 20 -> WARN; else -> OK }
-    val swapColor = when { pm.swapUsedPct > 85 -> HOT; pm.swapUsedPct > 70 -> WARN; else -> OK }
+    val ramColor = when { pm.critical -> HOT; pm.warning -> WARN; else -> OK }
+    val swapColor = when { pm.swapUsedPct > 85 -> HOT; pm.swapUsedPct > 75 -> WARN; else -> OK }
     SoftCard {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("Este celular", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(Modifier.weight(1f)) {
-                    ChartCard("RAM libre", "${pm.availMb} de ${pm.totalMb} MB") {
+                    ChartCard("RAM libre", "${pm.availMb} de ${pm.totalMb} MB", flat = true) {
                         Donut(listOf(pm.ramFreePct / 100f to ramColor), "${pm.ramFreePct}%")
                     }
                 }
                 Box(Modifier.weight(1f)) {
-                    ChartCard("Swap en uso", "${pm.swapTotalMb - pm.swapFreeMb} de ${pm.swapTotalMb} MB") {
+                    ChartCard("Swap en uso", "${pm.swapTotalMb - pm.swapFreeMb} de ${pm.swapTotalMb} MB", flat = true) {
                         Donut(listOf(pm.swapUsedPct / 100f to swapColor), "${pm.swapUsedPct}%")
                     }
                 }

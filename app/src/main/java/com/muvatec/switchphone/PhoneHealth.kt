@@ -9,7 +9,7 @@ data class PhoneMem(val totalMb: Int, val availMb: Int, val swapTotalMb: Int, va
 
     /** Low RAM and swap nearly exhausted. */
     val critical: Boolean get() = ramFreePct < 20 && swapTotalMb > 0 && swapUsedPct > 85
-    val warning: Boolean get() = ramFreePct < 20 && swapUsedPct > 70
+    val warning: Boolean get() = (ramFreePct < 15 && swapUsedPct > 60) || swapUsedPct > 75
 }
 
 object PhoneHealth {

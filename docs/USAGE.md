@@ -29,7 +29,7 @@ La pantalla detecta cuando el celular nuevo aparece en la lista del dongle y lo 
 ## Cambiar de celular
 
 ### Desde el celular que quiere el carro (recomendado)
-1. Abre la app. Si otro celular está en uso, verás **"X está usando el carro"**.
+1. Abre la app. Aunque ese celular **no esté conectado al dongle**, la pantalla *Celulares* muestra quién usa el carro (por Bluetooth) y, si hay alguien, el botón **Solicitar conexión**. Sin conexión también lista los celulares conocidos con su estado.
 2. Toca **Solicitar conexión**.
 3. En el carro aparece el aviso **"Y quiere conectarse"** con **Aceptar / Rechazar**; también llega a la notificación del celular activo.
 4. Al aceptar, el dongle se reinicia (~20–30 s) y Android Auto pasa al celular que pidió.

@@ -241,6 +241,7 @@ object Prefs {
     fun cacheNames(c: Context, names: List<String>) {
         sp(c).edit().putStringSet("known_names", names.filter { it.isNotBlank() }.toSet()).apply()
     }
+    fun knownNames(c: Context): Set<String> = sp(c).getStringSet("known_names", emptySet()) ?: emptySet()
     fun nameForHash(c: Context, h: String): String? =
         sp(c).getStringSet("known_names", emptySet())?.firstOrNull { Presence.hash(it) == h }
     fun autoAccept(c: Context) = sp(c).getBoolean("auto_accept", false)
