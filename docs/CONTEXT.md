@@ -80,6 +80,10 @@ Se descargó y leyó (solo `strings`) `server.cgi` de la versión pública 2024.
 
 El cambio sigue usando el reinicio del dongle (~30 s: ~5 s apagarse, ~21 s arrancar, ~5 s en conectar el celular nuevo). Se añadió una cuenta atrás con barra de progreso (notificación con progreso en los dos celulares, tarjeta en la app y modal en el carro). Se analizó `phone_link_deamon.sh`: es un supervisor que relanza `ARMAndroidAuto` y `hfpd` cada segundo, así que matar esos procesos reiniciaría solo el enlace en ~1–2 s. Falta una forma de ejecutarlo; ver [SOFT_SWITCH.md](SOFT_SWITCH.md).
 
+### 14. Intento de decompilar `server.cgi`
+
+`server.cgi` (42 KB, ARM, sin secciones, entropía 7.9) resultó ser un autoextraíble tipo UPX con LZMA **y cifrado por hardware** (`/dev/hwaes`, `ioctl 0xC00C6206`): la carga útil no se puede leer sin el controlador o la llave de ese dispositivo del kernel. Se documentó el cargador y se dejó un script reproducible (`tools/re/analyze_packed_elf.py`). El siguiente paso posible es leer el módulo `hwaes` en `ko.tar.gz` (requiere descargarlo). Detalle en [SERVER_CGI.md](SERVER_CGI.md).
+
 ## Errores que ya se pagaron (para no repetirlos)
 
 | Error | Causa | Solución |

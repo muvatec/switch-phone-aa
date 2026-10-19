@@ -55,6 +55,7 @@ Cada push a `main` ejecuta [`.github/workflows/release.yml`](.github/workflows/r
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Compilar, probar con DHU, CI, firma |
 | [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | Qué no se puede hacer y por qué |
 | [docs/SETTINGS_REFERENCE.md](docs/SETTINGS_REFERENCE.md) | Qué hace cada ajuste según el propio dongle |
+| [docs/SERVER_CGI.md](docs/SERVER_CGI.md) | Análisis estático de `server.cgi`: cargador y cifrado por hardware (`/dev/hwaes`) |
 | [docs/SOFT_SWITCH.md](docs/SOFT_SWITCH.md) | Cómo conecta el firmware a un celular y un plan para cambiar sin reiniciar |
 | [docs/FIRMWARE.md](docs/FIRMWARE.md) | Versiones de firmware vistas, cambios entre ellas, cómo se actualiza |
 | [docs/CONTEXT.md](docs/CONTEXT.md) | Historia del proyecto, decisiones, errores ya resueltos, pendientes |
@@ -65,6 +66,6 @@ Cada push a `main` ejecuta [`.github/workflows/release.yml`](.github/workflows/r
 app/            app Android (Kotlin, Compose, Car App Library)
 docs/           documentación (y muestras sanitizadas de firmware en docs/firmware/)
 branding/       logo (SVG maestro) y propuestas descartadas
-tools/          scripts: API del dongle por terminal, emulador de carro (DHU)
+tools/          scripts: API del dongle por terminal, emulador de carro (DHU), análisis de binarios (tools/re)
 .github/        CI de releases
 ```

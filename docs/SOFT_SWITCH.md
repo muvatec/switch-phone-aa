@@ -2,7 +2,7 @@
 
 Hoy cambiar de celular **reinicia el dongle** (~30 s). Este documento explica qué hace el firmware por dentro, por qué existe un camino mucho más corto (segundos) y qué haría falta para usarlo. **No está implementado ni probado**: es investigación para una mejora futura.
 
-> Fuente: scripts de texto plano del firmware público **2024.10.31** de la comunidad ([ludwig-v](https://github.com/ludwig-v/wireless-carplay-dongle-reverse-engineering/tree/master/Firmware/U2AC/_AUTOKIT/2024.10.31.1827), carpeta `Common_2024.07.19.1729.hwfs_Extracted/script/`). El dongle de este proyecto tiene la `2025.12.29.1746`, **más nueva**: los detalles pueden haber cambiado. Los binarios (`ARMAndroidAuto`, `fakeAADevice`, `server.cgi`…) vienen empaquetados y **no se pueden leer**; todo lo siguiente sale de los scripts.
+> Fuente: scripts de texto plano del firmware público **2024.10.31** de la comunidad ([ludwig-v](https://github.com/ludwig-v/wireless-carplay-dongle-reverse-engineering/tree/master/Firmware/U2AC/_AUTOKIT/2024.10.31.1827), carpeta `Common_2024.07.19.1729.hwfs_Extracted/script/`). El dongle de este proyecto tiene la `2025.12.29.1746`, **más nueva**: los detalles pueden haber cambiado. Los binarios (`ARMAndroidAuto`, `fakeAADevice`, `server.cgi`…) vienen empaquetados y **no se pueden leer** (análisis del cargador y del cifrado en [SERVER_CGI.md](SERVER_CGI.md)); todo lo siguiente sale de los scripts.
 
 ## 1. `phone_link_deamon.sh`, línea por línea
 
