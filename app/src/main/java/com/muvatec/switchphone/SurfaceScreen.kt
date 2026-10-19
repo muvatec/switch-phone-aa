@@ -292,8 +292,23 @@ class SurfaceScreen(ctx: CarContext) : Screen(ctx), SurfaceCallback {
         val d = density
         val r = drawModal(c, th, area)
         val p = paint(th.text, 20 * d, bold = true).apply { textAlign = Paint.Align.CENTER }
-        c.drawText(fit(text, p, r.width() - 32 * d), r.centerX(), r.centerY() + 6 * d, p)
+        c.drawText(fit(text, p, r.width() - 32 * d), r.centerX(), r.top + 62 * d, p)
+        val sub = paint(th.sub, 15 * d).apply { textAlign = Paint.Align.CENTER }
+        val line = if (SwitchProgress.active()) "${SwitchProgress.phase()}  ·  ~${SwitchProgress.remainingSec()} s" else "Un momento…"
+        c.drawText(fit(line, sub, r.width() - 32 * d), r.centerX(), r.top + 94 * d, sub)
+        // progress bar
+        val bw = r.width() - 64 * d
+        val bar = RectF(r.left + 32 * d, r.bottom - 56 * d, r.left + 32 * d + bw, r.bottom - 44 * d)
+        c.drawRoundRect(bar, 6 * d, 6 * d, paint(th.gray).apply { alpha = 90 })
+        val fill = RectF(bar.left, bar.top, bar.left + bw * SwitchProgress.fraction().coerceAtLeast(0.03f), bar.bottom)
+        c.drawRoundRect(fill, 6 * d, 6 * d, paint(th.blue))
         hits += RectF(0f, 0f, width.toFloat(), height.toFloat()) to { }
+    }
+
+    private fun scheduleBusyRedraw() {
+        if (busyText == null) return
+        render()
+        main.postDelayed({ scheduleBusyRedraw() }, 500)
     }
 
     private fun startSwitch(target: Device, current: Device?) {
@@ -302,7 +317,8 @@ class SurfaceScreen(ctx: CarContext) : Screen(ctx), SurfaceCallback {
         Thread {
             val res = runCatching { client.switchTo(target, current, Prefs.aggressive(carContext)) }
             main.post {
-                busyText = null
+                // Keep the countdown up while the dongle reboots (the car usually drops this screen by itself within seconds).
+                if (res.isSuccess) { main.postDelayed({ busyText = null; render() }, 12_000); scheduleBusyRedraw() } else busyText = null
                 CarToast.makeText(
                     carContext,
                     res.fold({ "Listo: conectando ${target.label}" }, { "Error: ${it.message}" }),

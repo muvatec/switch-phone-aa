@@ -20,11 +20,13 @@ El dongle se presenta al carro como un **teléfono Android en modo accesorio**:
 
 Eso permite usar el **Desktop Head Unit (DHU)** de Google como carro de pruebas con `--usb=<serial del dongle>`. Ver [DEVELOPMENT.md](DEVELOPMENT.md#probar-sin-carro-con-el-dhu).
 
+> **Corrección posterior.** Los "acuses de 12 bytes" descritos abajo eran **MTP**, no un protocolo del dongle: el modo de espera `12D1:0001` es un dispositivo MTP (`mtp-server`) y `0x2005` es *Operation Not Supported*. Explicación completa en [SOFT_SWITCH.md](SOFT_SWITCH.md#3-los-modos-usb-y-el-misterio-de-los-acuses-de-12-bytes).
+
 ### Lo que NO sirve: el protocolo "Carlinkit" en este modo
 
 Las apps tipo `pi-carplay` / `FastCarPlay` hablan un protocolo propio de Carlinkit (cabecera `0x55AA55AA`, longitud, tipo, `~tipo`). Contra este dongle en modo `12D1:0001`:
 
-- Acepta los paquetes y responde **solo un acuse de 12 bytes** por mensaje: `0c000000 03000520 <tipo del mensaje>`.
+- Acepta los paquetes y responde **solo un acuse de 12 bytes** por mensaje: `0c000000 03000520 <n>`. (Era un contenedor MTP *Response* con código `0x2005`; `<n>` es el *transaction id*.)
 - Nunca envía `Open`, `Plugged`, `Phase` ni vídeo; sin tráfico a los ~2–4 s se reinicia el USB.
 - El cifrado USB opcional de firmware nuevo (cabecera `0x55BB55BB`, AES-128-CFB) tampoco cambió el comportamiento.
 - No se encontró el VID:PID `12D1:0001` en ninguno de los proyectos revisados (que esperan `1314:1520/1521`).

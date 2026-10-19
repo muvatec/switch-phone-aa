@@ -17,7 +17,7 @@ Dongle inalámbrico de Android Auto **Carlinkit CPC200-2Air (5.0, U2AC, firmware
 - El dongle conectado al Mac enumera como **`12D1:0001`**, nombre `AutoKit` (después `VISION`), una interfaz de fabricante con endpoints bulk y un interrupt.
 - Se probó con [`pi-carplay`](https://github.com/RGreeneRI/pi-carplay) parcheando el VID/PID (que esperan `1314:1520/1521`). El dongle **acusa recibo** de cada mensaje con 12 bytes (`0c000000 03000520 <tipo>`) pero nunca envía vídeo ni estado, y reinicia el USB a los 2–4 s.
 - Se probó el cifrado USB de FastCarPlay (`0x55BB55BB`): sin cambio.
-- **Conclusión:** en este firmware el puerto USB no habla el protocolo Carlinkit de cabecera propia. Ver [RESEARCH.md](RESEARCH.md).
+- **Conclusión:** en este firmware el puerto USB no habla el protocolo Carlinkit de cabecera propia. Ver [RESEARCH.md](RESEARCH.md). *(Más tarde se vio en `start_mtp.sh` que los acuses eran respuestas MTP `0x2005`: el modo de espera es un dispositivo MTP; ver [SOFT_SWITCH.md](SOFT_SWITCH.md).)*
 
 ### 2. La web del dongle (hallazgo clave)
 
@@ -75,6 +75,10 @@ En el segundo celular la pantalla cargaba pero no ofrecía pedir el carro ni lle
 ### 12. ¿Cambiar de celular sin reiniciar?
 
 Se descargó y leyó (solo `strings`) `server.cgi` de la versión pública 2024.10 buscando comandos ocultos de desconexión: el binario está empaquetado y no muestra nada. Los scripts de texto plano muestran que el firmware tiene un mecanismo interno más liviano (`phone_link_deamon.sh AndroidAuto stop/start`, `hcitool`), inaccesible desde la API. Conclusión: sin tocar el firmware no hay cambio sin reinicio; queda como motivo para la vía de firmware modificado (volcado SPI + `custom_init.sh`). No se probaron comandos adivinados contra el dongle.
+
+### 13. Cuenta atrás en el cambio y análisis del cambio suave
+
+El cambio sigue usando el reinicio del dongle (~30 s: ~5 s apagarse, ~21 s arrancar, ~5 s en conectar el celular nuevo). Se añadió una cuenta atrás con barra de progreso (notificación con progreso en los dos celulares, tarjeta en la app y modal en el carro). Se analizó `phone_link_deamon.sh`: es un supervisor que relanza `ARMAndroidAuto` y `hfpd` cada segundo, así que matar esos procesos reiniciaría solo el enlace en ~1–2 s. Falta una forma de ejecutarlo; ver [SOFT_SWITCH.md](SOFT_SWITCH.md).
 
 ## Errores que ya se pagaron (para no repetirlos)
 

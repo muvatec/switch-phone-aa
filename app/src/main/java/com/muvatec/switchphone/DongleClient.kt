@@ -168,6 +168,7 @@ class DongleClient(context: Context) {
      * removed from the dongle's list so it cannot grab the link again (it must be re-paired later).
      */
     fun switchTo(target: Device, current: Device?, aggressive: Boolean) {
+        SwitchProgress.start(target.label)
         if (aggressive && current != null && current.id != target.id) forget(current.id)
         restart()
     }

@@ -32,7 +32,7 @@ La pantalla detecta cuando el celular nuevo aparece en la lista del dongle y lo 
 1. Abre la app. Aunque ese celular **no esté conectado al dongle**, la pantalla *Celulares* muestra quién usa el carro (por Bluetooth) y, si hay alguien, el botón **Solicitar conexión**. Sin conexión también lista los celulares conocidos con su estado.
 2. Toca **Solicitar conexión**.
 3. En el carro aparece el aviso **"Y quiere conectarse"** con **Aceptar / Rechazar**; también llega a la notificación del celular activo.
-4. Al aceptar, el dongle se reinicia (~20–30 s) y Android Auto pasa al celular que pidió.
+4. Al aceptar, el dongle se reinicia (~30 s) y Android Auto pasa al celular que pidió. Los dos celulares muestran una **cuenta atrás con barra de progreso** (notificación y tarjeta en la app; también en la pantalla del carro mientras siga viva la sesión): soltando el carro → reiniciando el dongle → conectando.
 5. Si el otro **rechaza** o **no responde** (45 s), tu app y una notificación lo dicen ("X rechazó la solicitud") y puedes pulsar **Reintentar**.
 
 El celular inactivo también recibe un aviso automático **"Cambiar a este celular"** cuando ve a otro proyectando.

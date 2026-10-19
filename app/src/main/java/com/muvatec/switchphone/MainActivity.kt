@@ -213,6 +213,7 @@ fun DongleApp() {
             item { ScreenTitle("Switch Phone", "Elige qué celular usa Android Auto") { refresh() } }
 
                 @Suppress("UNUSED_EXPRESSION") tick
+                if (SwitchProgress.active()) item { SwitchProgressCard() }
                 if (!Presence.selfProjecting) item {
                     SoftCard {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -575,6 +576,24 @@ private fun SimplePhoneRow(name: String, status: PhoneStatus) {
             Surface(shape = RoundedCornerShape(50), color = accent.copy(alpha = .16f)) {
                 Text(status.title(), color = accent, fontWeight = FontWeight.Bold, fontSize = 11.sp, modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun SwitchProgressCard() {
+    SoftCard {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(if (SwitchProgress.incoming) "Conectando este celular al carro" else "Cediendo el carro a ${SwitchProgress.target}",
+                fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            androidx.compose.material3.LinearProgressIndicator(progress = { SwitchProgress.fraction() }, modifier = Modifier.fillMaxWidth())
+            Text(
+                if (SwitchProgress.late()) "Tarda más de lo normal: revisa que el Bluetooth esté encendido y Android Auto en automático."
+                else "${SwitchProgress.phase()}  ·  ~${SwitchProgress.remainingSec()} s",
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text("El dongle se reinicia para soltar al celular actual; tarda unos 30 segundos.", style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

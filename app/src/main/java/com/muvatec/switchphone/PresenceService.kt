@@ -45,7 +45,7 @@ class PresenceService : Service() {
     }
 
     private val tick = object : Runnable {
-        override fun run() { evaluate(); main.postDelayed(this, 3000) }
+        override fun run() { evaluate(); main.postDelayed(this, if (SwitchProgress.active()) 1000 else 3000) }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -103,6 +103,7 @@ class PresenceService : Service() {
     // ---- state ------------------------------------------------------------------------------
 
     private fun evaluate() {
+        updateSwitchProgress()
         if (!Presence.isRunning && Presence.bluetoothOn(this) && Presence.hasPermissions(this)) Presence.start(this)
         val nm = getSystemService(NotificationManager::class.java)
         val active = Presence.selfProjecting
@@ -164,6 +165,32 @@ class PresenceService : Service() {
                 }
             }
         }.start()
+    }
+
+    private var progressShown = false
+
+    /** Ongoing notification with a countdown while the dongle reboots to hand the car over. */
+    private fun updateSwitchProgress() {
+        val nm = getSystemService(NotificationManager::class.java)
+        if (SwitchProgress.incoming && Presence.selfProjecting && SwitchProgress.active()) {
+            // This phone took over: done.
+            SwitchProgress.clear(); nm.cancel(ID_PROGRESS); progressShown = false
+            resultNotification("Conectado al carro", "Android Auto ya está con este celular.", retry = false)
+            return
+        }
+        if (!SwitchProgress.active()) {
+            if (progressShown) { nm.cancel(ID_PROGRESS); progressShown = false; SwitchProgress.clear() }
+            return
+        }
+        val title = if (SwitchProgress.incoming) "Conectando este celular al carro" else "Cediendo el carro a ${SwitchProgress.target}"
+        val text = if (SwitchProgress.late()) "Tarda más de lo normal: revisa que el Bluetooth esté encendido y Android Auto en automático."
+        else "${SwitchProgress.phase()}  ·  ~${SwitchProgress.remainingSec()} s"
+        val n = NotificationCompat.Builder(this, CH_ACTIVE).setSmallIcon(R.drawable.ic_swap)
+            .setContentTitle(title).setContentText(text).setOngoing(true).setOnlyAlertOnce(true)
+            .setProgress(100, (SwitchProgress.fraction() * 100).toInt(), SwitchProgress.late())
+            .setPriority(NotificationCompat.PRIORITY_LOW).build()
+        nm.notify(ID_PROGRESS, n)
+        progressShown = true
     }
 
     /** While projecting, warn when this phone is out of memory: Android Auto lags and drops touches. */
@@ -295,6 +322,7 @@ class PresenceService : Service() {
         private const val HOT_C = 75.0
         private const val ID_OFFER = 2
         private const val ID_REQUEST = 3
+        private const val ID_PROGRESS = 4
         const val ACTION_DISCONNECT = "com.muvatec.switchphone.DISCONNECT"
         const val ACTION_REQUEST = "com.muvatec.switchphone.REQUEST_SWITCH"
         const val ACTION_DISMISS = "com.muvatec.switchphone.DISMISS_OFFER"

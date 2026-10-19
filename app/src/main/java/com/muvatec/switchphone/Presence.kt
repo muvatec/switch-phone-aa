@@ -198,7 +198,7 @@ object Presence {
                     // Replies to this phone's request.
                     if (forMe && reqState.phase == ReqPhase.WAITING) {
                         if (flags and 4 != 0) { requestingUntil = 0; setReq(ReqState(ReqPhase.REJECTED, h, now)) }
-                        else if (flags and 8 != 0) { requestingUntil = 0; setReq(ReqState(ReqPhase.ACCEPTED, h, now)) }
+                        else if (flags and 8 != 0) { requestingUntil = 0; setReq(ReqState(ReqPhase.ACCEPTED, h, now)); SwitchProgress.start(myName.ifBlank { "este celular" }, incoming = true) }
                     }
                 }
             }
