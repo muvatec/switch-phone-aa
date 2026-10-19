@@ -69,6 +69,7 @@ class PresenceService : Service() {
                 Presence.requestSwitch(this)
                 notifyOffer("Pidiendo el control…", "Esperando que el otro celular lo ceda (unos 30 s).", withActions = false)
             }
+            ACTION_TEST_REQUEST -> handleRequest("00000000")
             ACTION_ACCEPT -> acceptRequest()
             ACTION_REJECT -> rejectRequest()
             ACTION_CLEAR -> { Presence.clearRequest(this); getSystemService(NotificationManager::class.java).cancel(ID_OFFER) }
@@ -128,7 +129,7 @@ class PresenceService : Service() {
 
     private fun resultNotification(title: String, text: String, retry: Boolean) {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
-        val b = NotificationCompat.Builder(this, CH_OFFER).setSmallIcon(R.drawable.ic_launcher)
+        val b = NotificationCompat.Builder(this, CH_OFFER).setSmallIcon(R.drawable.ic_swap)
             .setContentTitle(title).setContentText(text).setContentIntent(open)
             .setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true)
         if (retry) {
@@ -172,11 +173,11 @@ class PresenceService : Service() {
     private fun foregroundNotification(active: Boolean): Notification {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         if (!active) {
-            return NotificationCompat.Builder(this, CH_IDLE).setSmallIcon(R.drawable.ic_launcher)
+            return NotificationCompat.Builder(this, CH_IDLE).setSmallIcon(R.drawable.ic_swap)
                 .setContentTitle("Switch Phone").setContentText("Visible para cambiar de celular en el carro")
                 .setContentIntent(open).setOngoing(true).setPriority(NotificationCompat.PRIORITY_MIN).build()
         }
-        return NotificationCompat.Builder(this, CH_ACTIVE).setSmallIcon(R.drawable.ic_launcher)
+        return NotificationCompat.Builder(this, CH_ACTIVE).setSmallIcon(R.drawable.ic_swap)
             .setContentTitle("Conectado al carro")
             .setContentText("Android Auto activo con este celular")
             .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true)
@@ -188,7 +189,7 @@ class PresenceService : Service() {
 
     private fun notifyOffer(title: String, text: String, withActions: Boolean) {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
-        val b = NotificationCompat.Builder(this, CH_OFFER).setSmallIcon(R.drawable.ic_launcher)
+        val b = NotificationCompat.Builder(this, CH_OFFER).setSmallIcon(R.drawable.ic_swap)
             .setContentTitle(title).setContentText(text).setContentIntent(open)
             .setPriority(NotificationCompat.PRIORITY_HIGH).setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
             .setAutoCancel(!withActions).setTimeoutAfter(if (withActions) 0 else 45_000)
@@ -229,7 +230,7 @@ class PresenceService : Service() {
                 Intent(Intent.ACTION_VIEW).setComponent(android.content.ComponentName(this, DongleCarAppService::class.java)),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
-            val b = NotificationCompat.Builder(this, CH_OFFER).setSmallIcon(R.drawable.ic_launcher)
+            val b = NotificationCompat.Builder(this, CH_OFFER).setSmallIcon(R.drawable.ic_swap)
                 .setContentTitle(title).setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_HIGH).setCategory(NotificationCompat.CATEGORY_CALL)
                 .setTimeoutAfter(60_000)
@@ -239,7 +240,7 @@ class PresenceService : Service() {
                 .extend(
                     CarAppExtender.Builder()
                         .setContentTitle(title).setContentText(text)
-                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setSmallIcon(R.drawable.ic_swap)
                         .setImportance(NotificationManager.IMPORTANCE_HIGH)
                         .setContentIntent(carOpen)
                         .addAction(R.drawable.ic_swap, "Aceptar", accept)
@@ -285,6 +286,7 @@ class PresenceService : Service() {
         const val ACTION_DISCONNECT = "com.muvatec.switchphone.DISCONNECT"
         const val ACTION_REQUEST = "com.muvatec.switchphone.REQUEST_SWITCH"
         const val ACTION_DISMISS = "com.muvatec.switchphone.DISMISS_OFFER"
+        const val ACTION_TEST_REQUEST = "com.muvatec.switchphone.TEST_REQUEST"
         const val ACTION_CLEAR = "com.muvatec.switchphone.CLEAR_REQUEST"
         const val ACTION_ACCEPT = "com.muvatec.switchphone.ACCEPT_REQUEST"
         const val ACTION_REJECT = "com.muvatec.switchphone.REJECT_REQUEST"
@@ -296,6 +298,11 @@ class PresenceService : Service() {
         fun start(ctx: Context) {
             if (!Presence.hasPermissions(ctx)) return
             ctx.startForegroundService(Intent(ctx, PresenceService::class.java))
+        }
+
+        /** Simulates another phone asking for the car so the heads-up in Android Auto can be seen without a second phone. */
+        fun testRequest(ctx: Context) {
+            ctx.startForegroundService(Intent(ctx, PresenceService::class.java).setAction(ACTION_TEST_REQUEST))
         }
 
         /** Used by the tile and the icon shortcut. */

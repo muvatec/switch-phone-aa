@@ -98,6 +98,9 @@ fun ToolsTab(c: Ctl) {
                             "Registro del carro").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                     }, Modifier.fillMaxWidth()) { Text("Compartir registro del carro") }
                     TextButton(onClick = { CarLog.clear(c.ctx); c.toast("Registro borrado") }) { Text("Borrar registro") }
+                    Text("Con el celular conectado a Android Auto, simula que otro celular pide el carro para ver el aviso con Aceptar / Rechazar sobre el mapa y la música. No cambia nada en el dongle.",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedButton(onClick = { PresenceService.testRequest(c.ctx); c.toast("Aviso de prueba enviado") }, Modifier.fillMaxWidth()) { Text("Probar aviso de solicitud en el carro") }
                 }
             }
         }

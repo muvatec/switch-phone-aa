@@ -2,6 +2,7 @@ package com.muvatec.switchphone
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -112,6 +113,10 @@ private fun scheme(dark: Boolean): ColorScheme = if (dark) darkColorScheme(
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splash = installSplashScreen()
+        var ready = false
+        splash.setKeepOnScreenCondition { !ready }
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ ready = true }, 700)
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme(colorScheme = scheme(isSystemInDarkTheme()), shapes = androidx.compose.material3.Shapes()) { DongleApp() }

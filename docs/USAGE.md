@@ -114,6 +114,12 @@ La app trae **dos entradas** para Android Auto: **Switch Phone** (UI dibujada, c
    - *"Sin eventos"*: Android Auto nunca llegó a usar la app, es un problema de reconocimiento/listado.
    - Con eventos (`session requested`, `create screen`, `surface available`…): el carro sí la abrió; el registro dice qué pantalla recibió y si hubo toques.
 
+## Aviso de "quiere conectarse" en el carro
+
+Cuando otro celular pide el carro, Android Auto muestra un **aviso emergente con Aceptar / Rechazar** sobre el mapa y la música (es una notificación de app de carro, `CarAppExtender`, como los avisos de mensajes o de "Ir a casa"); funciona aunque estés en Waze o Spotify y, al tocarlo, abre Switch Phone. Se ve solo si Android Auto reconoce la app como app de carro.
+
+Para verlo sin un segundo celular: con el celular conectado al carro, **Herramientas → Registro del carro → Probar aviso de solicitud en el carro**. No cambia nada en el dongle.
+
 ## Problemas comunes
 
 | Síntoma | Causa y solución |

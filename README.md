@@ -63,6 +63,7 @@ Cada push a `main` ejecuta [`.github/workflows/release.yml`](.github/workflows/r
 ```
 app/            app Android (Kotlin, Compose, Car App Library)
 docs/           documentación (y muestras sanitizadas de firmware en docs/firmware/)
+branding/       logo (SVG maestro) y propuestas descartadas
 tools/          scripts: API del dongle por terminal, emulador de carro (DHU)
 .github/        CI de releases
 ```
