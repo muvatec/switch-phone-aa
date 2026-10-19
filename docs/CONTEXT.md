@@ -82,7 +82,7 @@ El cambio sigue usando el reinicio del dongle (~30 s: ~5 s apagarse, ~21 s arran
 
 ### 14. Intento de decompilar `server.cgi`
 
-`server.cgi` (42 KB, ARM, sin secciones, entropía 7.9) resultó ser un autoextraíble tipo UPX con LZMA **y cifrado por hardware** (`/dev/hwaes`, `ioctl 0xC00C6206`): la carga útil no se puede leer sin el controlador o la llave de ese dispositivo del kernel. Se documentó el cargador y se dejó un script reproducible (`tools/re/analyze_packed_elf.py`). El siguiente paso posible es leer el módulo `hwaes` en `ko.tar.gz` (requiere descargarlo). Detalle en [SERVER_CGI.md](SERVER_CGI.md).
+`server.cgi` (42 KB, ARM, sin secciones, entropía 7.9) resultó ser un autoextraíble tipo UPX con LZMA **y cifrado por hardware** (`/dev/hwaes`, `ioctl 0xC00C6206`): la carga útil no se puede leer sin el controlador o la llave de ese dispositivo del kernel. Se documentó el cargador y se dejó un script reproducible (`tools/re/analyze_packed_elf.py`). Se revisó `ko.tar.gz` (módulo `USBDrv`): solo trae controladores USB y **no** `hwaes`; el controlador estaría dentro del kernel (`Boot128/tmp/AutoBox.img`, 3.67 MB). El siguiente paso posible es descomprimir esa imagen (requiere descargarla). Detalle en [SERVER_CGI.md](SERVER_CGI.md).
 
 ## Errores que ya se pagaron (para no repetirlos)
 

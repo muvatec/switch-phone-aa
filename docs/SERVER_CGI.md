@@ -38,7 +38,7 @@ Sin el controlador `hwaes` (o la llave que usa) **no se puede descifrar la carga
 
 | Opción | Qué hace falta | Estado |
 |---|---|---|
-| **A.** Leer el controlador `hwaes` | El módulo de kernel está en `script/ko.tar.gz` (108 751 bytes) del módulo `USBDrv` de la misma compilación pública. Ver si la llave está dentro (constante) o la toma del hardware (OTP/CAAM del i.MX6, no recuperable por software) | **Pendiente**: requiere descargar y leer ese archivo |
+| **A.** Leer el controlador `hwaes` | **No está en `script/ko.tar.gz`** (revisado, ver abajo). Lo más probable es que esté **dentro del kernel** (`tmp/AutoBox.img`, 3 670 016 bytes, módulo `Boot128`) y haya que descomprimir esa imagen para ver si la llave es una constante o la toma del hardware (OTP/CAAM del i.MX6, no recuperable por software) | **Pendiente**: requiere descargar `AutoBox.img` |
 | **B.** Emular el cargador con una llave conocida | La llave de la opción A | Bloqueado por A |
 | **C.** Volcar `server.cgi` ya descifrado desde un dongle vivo | Shell en el dongle (no hay: `adbd` se mata en modo carro) o firmware modificado | Ver [SOFT_SWITCH.md](SOFT_SWITCH.md) |
 | **D.** Dejar de buscar comandos ocultos | Observar el comportamiento externo (probar comandos desconocidos contra la API) | No se hizo: un comando desconocido puede reiniciar o romper el dongle |
@@ -59,3 +59,16 @@ venv/bin/python tools/re/analyze_packed_elf.py server.cgi
 ```
 
 Imprime cabeceras, entropía por bloque, syscalls del cargador (`mmap2`, `open`, `ioctl`, `close`, `munmap`, `cacheflush`) y las cadenas. (Nota: la cadena `/dev/hwaes` aparece como `/dvhwas` en la última línea porque el script solo cuenta los `mov` inmediatos; el código hace `add r0, r0, #1` para `d`→`e`.)
+
+## 6. Comprobación: `script/ko.tar.gz` (módulo `USBDrv`) no contiene `hwaes`
+
+Descargado y listado en 2026-10 (108 751 bytes); solo se leyeron sus cadenas, nada se cargó ni ejecutó. Son controladores USB para el kernel **3.14.52 ARMv7** del dongle, todos GPL:
+
+| Módulo | Para qué |
+|---|---|
+| `g_android_accessory.ko` (94 524 B) | Gadget Android compuesto: accesorio (AOA) / MTP / ADB (`acc_ioctl`, `mtp_ioctl`) |
+| `g_android_autobox.ko` (93 072 B) | Variante "autobox" del anterior (misma base de Mike Lockwood / Michal Nazarewicz, `misc_register`) |
+| `g_iphone.ko` (31 724 B), `f_ptp*.ko`, `cdc_ncm.ko` | Gadget de iPhone/CarPlay: PTP y red NCM |
+| `storage_common.ko` | Almacenamiento masivo USB |
+
+Ninguno contiene cadenas `hwaes`, `aes`, `crypto`, `secret` ni llaves; los únicos "key" son claves de lockdep del kernel. Esto confirma por dentro el mapa de modos USB de [SOFT_SWITCH.md](SOFT_SWITCH.md): `g_android_accessory`/`autobox` hacen el modo MTP de espera y el modo accesorio (AOA) del carro.
