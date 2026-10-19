@@ -72,6 +72,10 @@ Probada en un carro real con el Pixel 9 y "Fuentes desconocidas" activo, **Switc
 
 En el segundo celular la pantalla cargaba pero no ofrecía pedir el carro ni llegaba el aviso. Causa: **su Bluetooth estaba apagado** (se había apagado durante la prueba del tercer celular) y la presencia BLE solo arrancaba una vez al abrir la app, así que nunca se recuperaba al encenderlo y la pantalla no avisaba. Ahora la presencia se reinicia con el Bluetooth (receptor de cambio de estado y reintento periódico) y la pantalla muestra "Bluetooth apagado" / "Faltan permisos" / "Buscando… no veo ningún otro celular".
 
+### 12. ¿Cambiar de celular sin reiniciar?
+
+Se descargó y leyó (solo `strings`) `server.cgi` de la versión pública 2024.10 buscando comandos ocultos de desconexión: el binario está empaquetado y no muestra nada. Los scripts de texto plano muestran que el firmware tiene un mecanismo interno más liviano (`phone_link_deamon.sh AndroidAuto stop/start`, `hcitool`), inaccesible desde la API. Conclusión: sin tocar el firmware no hay cambio sin reinicio; queda como motivo para la vía de firmware modificado (volcado SPI + `custom_init.sh`). No se probaron comandos adivinados contra el dongle.
+
 ## Errores que ya se pagaron (para no repetirlos)
 
 | Error | Causa | Solución |
