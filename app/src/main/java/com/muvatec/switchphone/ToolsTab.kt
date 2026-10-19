@@ -83,6 +83,25 @@ fun ToolsTab(c: Ctl) {
             }
         }
 
+        item { SectionTitle("Registro del carro") }
+        item {
+            SoftCard {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Guarda lo que hace Android Auto con esta app (si el carro la enlazó, tamaño de pantalla, toques). Úsalo después de conectar al carro si Switch Phone no aparece.",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedButton(onClick = {
+                        val txt = CarLog.read(c.ctx).ifBlank { "Sin eventos: Android Auto todavía no ha usado esta app." }
+                        val f = File(File(c.ctx.cacheDir, "logs").apply { mkdirs() }, "switchphone_carro_${System.currentTimeMillis()}.log").also { it.writeText(txt) }
+                        val uri = FileProvider.getUriForFile(c.ctx, "${c.ctx.packageName}.files", f)
+                        c.ctx.startActivity(Intent.createChooser(
+                            Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION),
+                            "Registro del carro").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    }, Modifier.fillMaxWidth()) { Text("Compartir registro del carro") }
+                    TextButton(onClick = { CarLog.clear(c.ctx); c.toast("Registro borrado") }) { Text("Borrar registro") }
+                }
+            }
+        }
+
         item { SectionTitle("Firmware") }
         item {
             SoftCard {

@@ -22,7 +22,8 @@
 | `PresenceService` | Servicio en primer plano: mantiene el beacon, crea las notificaciones y ejecuta el cambio cuando se acepta una solicitud |
 | `RequestInbox` | Buzón en memoria de la solicitud pendiente; lo leen la notificación y la pantalla del carro |
 | `DongleCarAppService` / `SurfaceScreen` | App de Android Auto (Car App Library, categoría navegación). Dibuja las tarjetas sobre la superficie |
-| `DevicesScreen`, `ConfirmScreen` | Versión con plantillas (lista/grid). Quedó como respaldo; no se usa por defecto |
+| `DongleTemplateCarAppService`, `DevicesScreen`, `ConfirmScreen` | Segunda entrada (categoría IoT) con plantillas de Car App Library (grid). Respaldo por si Android Auto no lista la versión de navegación |
+| `CarLog` | Registro persistente (200 KB) de lo que hace Android Auto con la app: servicio creado, host, pantalla, tamaño, toques. Se comparte desde Herramientas |
 | `MainActivity` + `Tabs` | UI del celular (Compose): menú inferior y pantalla *Celulares* |
 | `SettingsTab`, `MonitorTab`, `ToolsTab` | Ajustes dinámicos (solo claves que reporta el firmware), monitor en vivo y herramientas (logo, carInfo, logs, reset) |
 | `SwitchTileService`, `SwitchHereActivity` | Botón del panel rápido y atajo del ícono |

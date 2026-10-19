@@ -29,9 +29,52 @@ import androidx.car.app.validation.HostValidator
 
 /** Android Auto entry point: lists the phones known by the dongle and lets the driver drop/switch. */
 class DongleCarAppService : CarAppService() {
-    override fun createHostValidator(): HostValidator = HostValidator.ALLOW_ALL_HOSTS_VALIDATOR
-    override fun onCreateSession(): Session = object : Session() {
-        override fun onCreateScreen(intent: Intent): Screen = SurfaceScreen(carContext)
+    override fun onCreate() { super.onCreate(); CarLog.log(this, "service created ") }
+    override fun onDestroy() { CarLog.log(this, "service destroyed"); super.onDestroy() }
+
+    override fun createHostValidator(): HostValidator {
+        CarLog.log(this, "host validator requested")
+        return HostValidator.ALLOW_ALL_HOSTS_VALIDATOR
+    }
+
+    override fun onCreateSession(): Session {
+        CarLog.log(this, "session requested by Android Auto")
+        return object : Session() {
+            init {
+                lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+                    override fun onStart(o: androidx.lifecycle.LifecycleOwner) = CarLog.log(carContext, "session start")
+                    override fun onResume(o: androidx.lifecycle.LifecycleOwner) = CarLog.log(carContext, "session resume (visible in the car)")
+                    override fun onPause(o: androidx.lifecycle.LifecycleOwner) = CarLog.log(carContext, "session pause")
+                    override fun onStop(o: androidx.lifecycle.LifecycleOwner) = CarLog.log(carContext, "session stop")
+                    override fun onDestroy(o: androidx.lifecycle.LifecycleOwner) = CarLog.log(carContext, "session destroyed")
+                })
+            }
+
+            override fun onCreateScreen(intent: Intent): Screen {
+                val host = runCatching { carContext.hostInfo?.let { "${it.packageName} uid=${it.uid}" } }.getOrNull() ?: "unknown"
+                CarLog.log(carContext, "create screen: car API level=${carContext.carAppApiLevel}, host=$host, dark=${carContext.isDarkMode}")
+                return SurfaceScreen(carContext)
+            }
+        }
+    }
+}
+
+/**
+ * Second entry point in the IOT category, using the plain Car App Library templates (grid of cards).
+ * Android Auto is stricter with the navigation category used by the drawn UI for apps installed from an APK,
+ * so this gives it another chance to list the app.
+ */
+class DongleTemplateCarAppService : CarAppService() {
+    override fun onCreate() { super.onCreate(); CarLog.log(this, "template service created") }
+    override fun createHostValidator(): HostValidator { CarLog.log(this, "template host validator requested"); return HostValidator.ALLOW_ALL_HOSTS_VALIDATOR }
+    override fun onCreateSession(): Session {
+        CarLog.log(this, "template session requested by Android Auto")
+        return object : Session() {
+            override fun onCreateScreen(intent: Intent): Screen {
+                CarLog.log(carContext, "template screen created: car API level=${carContext.carAppApiLevel}, dark=${carContext.isDarkMode}")
+                return DevicesScreen(carContext)
+            }
+        }
     }
 }
 

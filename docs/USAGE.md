@@ -102,6 +102,18 @@ Arriba del Monitor, **RAM libre** y **swap en uso** del propio celular. Un celul
 - **Firmware:** versión, hardware y módulos. **No** actualiza el firmware: una imagen incorrecta puede dejar el dongle inservible; usa la app oficial.
 - **Zona de peligro:** reiniciar, restablecer la app del dongle y restaurar de fábrica (pide escribir `RESTAURAR`; borra ajustes y celulares guardados).
 
+## Si la app no aparece en el carro
+
+La app trae **dos entradas** para Android Auto: **Switch Phone** (UI dibujada, categoría navegación) y **Switch Phone (simple)** (plantillas, categoría IoT). Android Auto es más estricto con apps instaladas por APK, y se ha visto que algunas apps de navegación instaladas así no se listan aunque "Fuentes desconocidas" esté activo.
+
+1. Android Auto → Versión ×10 → ⋮ → **Ajustes de desarrollador → Fuentes desconocidas**.
+2. Desinstala e instala de nuevo Switch Phone **después** de activarlo, y ábrela una vez.
+3. Ajustes → Apps → Android Auto → **Almacenamiento → Borrar caché**, y fuerza la detención.
+4. Android Auto → **Personalizar lanzador**: marca las entradas de Switch Phone.
+5. Conecta al carro. Si no aparece, abre **Herramientas → Compartir registro del carro**:
+   - *"Sin eventos"*: Android Auto nunca llegó a usar la app, es un problema de reconocimiento/listado.
+   - Con eventos (`session requested`, `create screen`, `surface available`…): el carro sí la abrió; el registro dice qué pantalla recibió y si hubo toques.
+
 ## Problemas comunes
 
 | Síntoma | Causa y solución |

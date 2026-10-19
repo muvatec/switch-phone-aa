@@ -54,6 +54,7 @@ class PresenceService : Service() {
         Presence.onRequest = { h -> handleRequest(h) }
         Presence.onResult = { st -> showResult(st) }
         CarConnection(this).type.observeForever { t ->
+            CarLog.log(this, "car connection type=${when (t) { CarConnection.CONNECTION_TYPE_PROJECTION -> "PROJECTION"; CarConnection.CONNECTION_TYPE_NATIVE -> "NATIVE"; else -> "NOT_CONNECTED" }}")
             Presence.setProjecting(this, t == CarConnection.CONNECTION_TYPE_PROJECTION)
             evaluate()
         }

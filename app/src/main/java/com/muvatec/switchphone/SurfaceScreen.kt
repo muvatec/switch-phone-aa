@@ -87,16 +87,18 @@ class SurfaceScreen(ctx: CarContext) : Screen(ctx), SurfaceCallback {
 
     override fun onSurfaceAvailable(c: SurfaceContainer) {
         surface = c.surface; width = c.width; height = c.height; density = max(c.dpi, 120) / 160f
+        CarLog.log(carContext, "surface available ${c.width}x${c.height} dpi=${c.dpi}")
         render()
     }
 
-    override fun onSurfaceDestroyed(c: SurfaceContainer) { surface = null }
+    override fun onSurfaceDestroyed(c: SurfaceContainer) { surface = null; CarLog.log(carContext, "surface destroyed") }
 
     override fun onVisibleAreaChanged(r: Rect) { render() }
 
     override fun onStableAreaChanged(r: Rect) { stable = r; render() }
 
     override fun onClick(x: Float, y: Float) {
+        CarLog.log(carContext, "tap at ${x.toInt()},${y.toInt()} (${hits.size} targets)")
         hits.lastOrNull { it.first.contains(x, y) }?.second?.invoke()
     }
 

@@ -64,6 +64,10 @@ Se quiso compartir los datos del celular con todo el carro. Hallazgos: el Pixel 
 - **No conectaba:** los registros de Android Auto mostraban `WIRELESS_SETUP_FAILED_TO_START_NO_HFP_FROM_HU_PRESENCE`: el Bluetooth con el dongle se cortaba a los ~2 s y Android Auto inalámbrico necesita el perfil manos libres (HFP) del dongle. El dongle atiende un solo Bluetooth a la vez; al apagar el Bluetooth de los otros celulares, olvidar el emparejamiento y volver a emparejar (con "Llamadas telefónicas" activas) conectó.
 - **Iba lento:** con el celular proyectando, el enlace era sano (acuses de audio ~23 ms, WiFi 5 GHz a 270–300 Mbps), pero el celular tenía la RAM casi agotada y el **swap al 92 %**, `system_server` al 94 % de CPU y el limitador de cuadros de Android Auto alternando 60 ↔ 30 fps. Un Pixel 9 con 11 GB iba sobrado. Por eso la app ahora mide la memoria del celular.
 
+### 10. La app no aparecía en el carro real
+
+Probada en un carro real con el Pixel 9 y "Fuentes desconocidas" activo, **Switch Phone no salía** en las apps del carro ni en "Personalizar lanzador". En el DHU sí. El log del sistema (256 KB) ya no tenía la sesión del viaje, así que no se pudo ver el motivo. Hipótesis: Android Auto es más estricto con la categoría **navegación** para apps instaladas por APK (otras apps de navegación sin Play Store reportan lo mismo). Acciones: segunda entrada en categoría IoT con plantillas, y registro persistente `CarLog` para tener evidencia en el siguiente intento.
+
 ## Errores que ya se pagaron (para no repetirlos)
 
 | Error | Causa | Solución |
