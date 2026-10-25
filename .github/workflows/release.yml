@@ -35,22 +35,27 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Optional: configure the repository secrets KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS and
-      # KEY_PASSWORD to sign with your own key. Without them the APK is signed with the debug key.
+      # Signing secrets live in the self-hosted Infisical (project switch-phone-y1-nt, env prod).
+      # Only INFISICAL_CLIENT_ID/SECRET (repo secrets) and INFISICAL_URL (repo variable) are kept in GitHub.
+      - name: Fetch signing secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: universal
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          domain: ${{ vars.INFISICAL_URL }}
+          project-slug: switch-phone-y1-nt
+          env-slug: prod
+
       - name: Prepare release keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
-            echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
-            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
-            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> "$GITHUB_ENV"
-            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> "$GITHUB_ENV"
-            echo "signing=release key" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "signing=debug key (no keystore secrets set)" >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "KEYSTORE_BASE64 missing from Infisical; refusing to publish an unsigned release" >&2
+            exit 1
           fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          echo "signing=release key" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build release APK
         run: ./gradlew --no-daemon assembleRelease -PversionName="$VERSION_NAME" -PversionCode="${{ github.run_number }}"
