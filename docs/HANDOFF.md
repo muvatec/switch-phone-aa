@@ -17,7 +17,8 @@ Sin secretos en este archivo. Rama de trabajo: `ccr-e76d98cb-jmhgna`.
 ## Pendiente
 1. Certificado: el navegador mostraba X roja. Posible `TRAEFIK DEFAULT CERT` (Let's Encrypt no emitio).
    Revisar emisor; si hace falta, reiniciar el proxy de Coolify (corta unos segundos blaze/SPIDER: pedir permiso).
-2. Probar `mcp__infisical__list-projects` en sesion nueva (variables `INFISICAL_*` en el entorno).
+2. HECHO (2026-10-25): `mcp__infisical__list-projects` funciona. Proyecto `Switch phone` (slug `switch-phone-y1-nt`,
+   id `78f4774b-6e94-4c36-add6-9441ecb6f8d4`, envs dev/staging/prod). Usar ese slug en el workflow, no `switch-phone`.
 3. Proyecto `switch-phone` en Infisical, secretos de firma (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`,
    `KEY_ALIAS`, `KEY_PASSWORD`), Machine Identity solo lectura para GitHub Actions
    (`INFISICAL_CLIENT_ID/SECRET` en secrets del repo; `INFISICAL_URL` en vars). Ver `docs/INFISICAL.md`.
