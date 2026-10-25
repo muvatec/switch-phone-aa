@@ -15,14 +15,15 @@ Sin secretos en este archivo. Rama de trabajo: `ccr-e76d98cb-jmhgna`.
   crear client secret nuevo, guardarlo sin espacios y abrir sesion nueva.
 
 ## Pendiente
-1. Certificado: el navegador mostraba X roja. Posible `TRAEFIK DEFAULT CERT` (Let's Encrypt no emitio).
-   Revisar emisor; si hace falta, reiniciar el proxy de Coolify (corta unos segundos blaze/SPIDER: pedir permiso).
+1. HECHO: proxy reiniciado, `heimdall.muvatec.com` con cert Let's Encrypt valido.
 2. HECHO (2026-10-25): `mcp__infisical__list-projects` funciona. Proyecto `Switch phone` (slug `switch-phone-y1-nt`,
    id `78f4774b-6e94-4c36-add6-9441ecb6f8d4`, envs dev/staging/prod). Usar ese slug en el workflow, no `switch-phone`.
-3. Proyecto `switch-phone` en Infisical, secretos de firma (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`,
+3. PARCIAL: keystore PKCS12 (alias `switchphone`) generado y los 4 secretos ya estan en Infisical `prod`.
+   Falta: Machine Identity `github-actions` (solo lectura) y en GitHub secrets `INFISICAL_CLIENT_ID/SECRET` + var `INFISICAL_URL`.
+   (original) secretos de firma (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`,
    `KEY_ALIAS`, `KEY_PASSWORD`), Machine Identity solo lectura para GitHub Actions
    (`INFISICAL_CLIENT_ID/SECRET` en secrets del repo; `INFISICAL_URL` en vars). Ver `docs/INFISICAL.md`.
-4. Migrar `.github/workflows/release.yml` a `Infisical/secrets-action` cuando todo funcione.
+4. HECHO en la rama (no en main): `release.yml` usa `Infisical/secrets-action` y exige keystore. Al mergear a main sale la release firmada.
 5. Cerrar: revocar el token de Coolify y guardar offline la `ENCRYPTION_KEY` de Infisical.
 
 ## Notas tecnicas
