@@ -1,52 +1,56 @@
-# Infisical self-hosted for Coolify (Docker Compose service).
-# No real values live here: set them in Coolify > service > Environment Variables
-# (see .env.example and docs/INFISICAL.md).
+# Compose desplegado en Coolify (servicio Heimdall/infisical). Las variables SERVICE_* las genera Coolify;
+# no hay valores reales aqui. Ver docs/HANDOFF.md.
 services:
-  infisical:
-    image: infisical/infisical:latest-postgres # pin to a release tag once deployed
-    restart: unless-stopped
+  backend:
+    image: 'infisical/infisical:v0.154.6'
     depends_on:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     environment:
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY:?}
-      - AUTH_SECRET=${AUTH_SECRET:?}
-      - SITE_URL=${SITE_URL:?}
-      - DB_CONNECTION_URI=postgresql://infisical:${POSTGRES_PASSWORD:?}@db:5432/infisical
-      - REDIS_URL=redis://redis:6379
+      - SERVICE_URL_BACKEND_8080
+      - NODE_ENV=production
+      - 'SITE_URL=${SITE_URL:-${SERVICE_URL_BACKEND}}'
+      - 'ENCRYPTION_KEY=${SERVICE_PASSWORD_ENCRYPTIONKEY}'
+      - 'AUTH_SECRET=${SERVICE_REALBASE64_64_AUTHSECRET}'
+      - 'DB_CONNECTION_URI=postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-infisical}'
+      - 'REDIS_URL=redis://redis:6379'
       - TELEMETRY_ENABLED=false
-    expose:
-      - "8080"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/status >/dev/null || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
-
-  db:
-    image: postgres:16-alpine
+      - NODE_OPTIONS=--max-old-space-size=1024
+    mem_limit: 1536m
     restart: unless-stopped
-    environment:
-      - POSTGRES_USER=infisical
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?}
-      - POSTGRES_DB=infisical
-    volumes:
-      - infisical-db:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U infisical -d infisical"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
   redis:
-    image: redis:7-alpine
-    restart: unless-stopped
+    image: 'redis:7'
+    command: redis-server --maxmemory 64mb --maxmemory-policy noeviction --save 300 10
     volumes:
-      - infisical-redis:/data
+      - 'redis-data:/data'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 96m
+    restart: unless-stopped
+
+  db:
+    image: 'postgres:14-alpine'
+    command: postgres -c shared_buffers=64MB -c max_connections=30 -c work_mem=4MB -c effective_cache_size=256MB -c maintenance_work_mem=32MB
+    environment:
+      - 'POSTGRES_USER=${SERVICE_USER_POSTGRES}'
+      - 'POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}'
+      - 'POSTGRES_DB=${POSTGRES_DB:-infisical}'
+    volumes:
+      - 'pg-data:/var/lib/postgresql/data'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 256m
+    restart: unless-stopped
 
 volumes:
-  infisical-db:
-  infisical-redis:
+  redis-data:
+  pg-data:
