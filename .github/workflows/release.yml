@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 concurrency:
   group: release
@@ -36,13 +37,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       # Signing secrets live in the self-hosted Infisical (project switch-phone-y1-nt, env prod).
-      # Only INFISICAL_CLIENT_ID/SECRET (repo secrets) and INFISICAL_URL (repo variable) are kept in GitHub.
+      # Auth is GitHub OIDC (no stored secret): only the repo variables INFISICAL_IDENTITY_ID and INFISICAL_URL are needed.
       - name: Fetch signing secrets from Infisical
         uses: Infisical/secrets-action@v1.0.9
         with:
-          method: universal
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           domain: ${{ vars.INFISICAL_URL }}
           project-slug: switch-phone-y1-nt
           env-slug: prod

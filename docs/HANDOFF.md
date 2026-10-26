@@ -48,3 +48,11 @@ La sesion nueva debe EJECUTAR todo lo de "Plan", no solo describirlo.
 - Crear identidades de organizacion con el MCP no es posible; usar API REST con el token de arriba.
 - Un conector "Coolify" inyectado por el proxy daba 401 con la API directa; usar las herramientas `mcp__Coolify__*`.
 - Si hay que crear otro proyecto en Infisical, el token admin de organizacion lo permite.
+
+## Actualizacion (2026-10-26): auth por OIDC
+- El workflow ya no usa client secret. Identidad Infisical `github-ci-switch-phone` (id `d7e0a661-5368-46c8-a9e7-de08c85207c4`),
+  OIDC: issuer `https://token.actions.githubusercontent.com`, audience `https://heimdall.muvatec.com`,
+  subject `repo:muvatec/switch-phone-*:ref:refs/heads/main`, Viewer en el proyecto `Switch phone`.
+- Variables de repo en `switch-phone-aa`: `INFISICAL_IDENTITY_ID`, `INFISICAL_URL` (las variables de org no sirven en repos privados del plan Free).
+- Ya no hacen falta `INFISICAL_CLIENT_ID/SECRET`; los pasos 2-3 del Plan quedan obsoletos.
+- Pendiente: quitar Universal Auth de la identidad (solo OIDC); seguir con los pasos 4-6.
