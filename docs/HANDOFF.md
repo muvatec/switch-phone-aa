@@ -51,8 +51,11 @@ La sesion nueva debe EJECUTAR todo lo de "Plan", no solo describirlo.
 
 ## Actualizacion (2026-10-26): auth por OIDC
 - El workflow ya no usa client secret. Identidad Infisical `github-ci-switch-phone` (id `d7e0a661-5368-46c8-a9e7-de08c85207c4`),
-  OIDC: issuer `https://token.actions.githubusercontent.com`, audience `https://heimdall.muvatec.com`,
-  subject `repo:muvatec/switch-phone-*:ref:refs/heads/main`, Viewer en el proyecto `Switch phone`.
+  OIDC: issuer `https://token.actions.githubusercontent.com`, audience `https://github.com/muvatec` (default of the action),
+  subject `repo:muvatec@217837244/switch-phone-*:ref:refs/heads/main` (the org customises `sub` to include owner/repo IDs), Viewer en el proyecto `Switch phone`.
 - Variables de repo en `switch-phone-aa`: `INFISICAL_IDENTITY_ID`, `INFISICAL_URL` (las variables de org no sirven en repos privados del plan Free).
 - Ya no hacen falta `INFISICAL_CLIENT_ID/SECRET`; los pasos 2-3 del Plan quedan obsoletos.
 - Pendiente: quitar Universal Auth de la identidad (solo OIDC); seguir con los pasos 4-6.
+- Release v0.1.23 verificada: APK firmado con la llave de release (CN=Switch Phone, RSA 4096; huella igual a la del keystore en Infisical).
+  v0.1.22 iba con la llave debug, asi que no se actualiza encima: hay que desinstalar primero.
+- La release ahora tambien adjunta `switch-phone-0.1.N.aab` (Android App Bundle) para Google Play.
