@@ -57,17 +57,19 @@ jobs:
           echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
           echo "signing=release key" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Build release APK
-        run: ./gradlew --no-daemon assembleRelease -PversionName="$VERSION_NAME" -PversionCode="${{ github.run_number }}"
+      - name: Build release APK and Play Store bundle (AAB)
+        run: ./gradlew --no-daemon assembleRelease bundleRelease -PversionName="$VERSION_NAME" -PversionCode="${{ github.run_number }}"
 
-      - name: Name the artifact
-        run: cp app/build/outputs/apk/release/app-release.apk "switch-phone-${VERSION_NAME}.apk"
+      - name: Name the artifacts
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk "switch-phone-${VERSION_NAME}.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "switch-phone-${VERSION_NAME}.aab"
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v${VERSION_NAME}" "switch-phone-${VERSION_NAME}.apk" \
+          gh release create "v${VERSION_NAME}" "switch-phone-${VERSION_NAME}.apk" "switch-phone-${VERSION_NAME}.aab" \
             --title "Switch Phone ${VERSION_NAME}" \
             --target "${{ github.sha }}" \
             --generate-notes
