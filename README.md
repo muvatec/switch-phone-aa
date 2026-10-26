@@ -62,6 +62,7 @@ Cada push a `main` ejecuta [`.github/workflows/release.yml`](.github/workflows/r
 | [docs/SERVER_CGI.md](docs/SERVER_CGI.md) | Análisis estático de `server.cgi`: cargador y cifrado por hardware (`/dev/hwaes`) |
 | [docs/SOFT_SWITCH.md](docs/SOFT_SWITCH.md) | Cómo conecta el firmware a un celular y un plan para cambiar sin reiniciar |
 | [docs/FIRMWARE.md](docs/FIRMWARE.md) | Versiones de firmware vistas, cambios entre ellas, cómo se actualiza |
+| [docs/DEVTO_POST_BRIEF.md](docs/DEVTO_POST_BRIEF.md) | Brief para redactar un post de blog/dev.to sobre el proyecto |
 | [docs/CONTEXT.md](docs/CONTEXT.md) | Historia del proyecto, decisiones, errores ya resueltos, pendientes |
 
 ## Estructura
