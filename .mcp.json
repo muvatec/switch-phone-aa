@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "coolify": {
+      "command": "npx",
+      "args": ["-y", "coolify-mcp-server"],
+      "env": {
+        "COOLIFY_BASE_URL": "${COOLIFY_BASE_URL:-https://master.muvatec.com}",
+        "COOLIFY_TOKEN": "${COOLIFY_TOKEN}"
+      }
+    },
+    "infisical": {
+      "command": "npx",
+      "args": ["-y", "@infisical/mcp"],
+      "env": {
+        "INFISICAL_HOST_URL": "${INFISICAL_HOST_URL:-https://heimdall.muvatec.com}",
+        "INFISICAL_UNIVERSAL_AUTH_CLIENT_ID": "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID}",
+        "INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET": "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET}"
+      }
+    }
+  }
+}
