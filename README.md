@@ -1,5 +1,9 @@
 # Switch Phone
 
+[![Build and release APK](https://github.com/muvatec/switch-phone-aa/actions/workflows/release.yml/badge.svg)](https://github.com/muvatec/switch-phone-aa/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/muvatec/switch-phone-aa)](../../releases)
+
 Cambia entre varios celulares Android en un dongle inalámbrico de Android Auto **Carlinkit CPC200-2Air (5.0 / U2AC, firmware AutoKit)**, desde el propio celular y desde la pantalla del carro.
 
 - Ve **qué celular está en uso** (ACTIVO), **cuáles están a la vista** (DISPONIBLE) y **cuáles solo están guardados** en el dongle (GUARDADO).
@@ -67,5 +71,15 @@ app/            app Android (Kotlin, Compose, Car App Library)
 docs/           documentación (y muestras sanitizadas de firmware en docs/firmware/)
 branding/       logo (SVG maestro) y propuestas descartadas
 tools/          scripts: API del dongle por terminal, emulador de carro (DHU), análisis de binarios (tools/re)
-.github/        CI de releases
+.github/        CI de releases, plantillas de issues y PR
 ```
+
+## Contribuir
+
+Issues y PR bienvenidos. Antes de empezar, lee [CONTRIBUTING.md](CONTRIBUTING.md) — tiene qué tipo de cambios se aceptan y qué no (en particular: nada que intente descifrar los binarios del firmware; ver [docs/SERVER_CGI.md](docs/SERVER_CGI.md) de por qué), y [docs/CONTEXT.md](docs/CONTEXT.md) para no repetir caminos ya cerrados.
+
+Si tienes un modelo o firmware de dongle distinto al documentado, un issue contando qué encontraste ayuda mucho — las claves de ajustes cambian entre firmwares.
+
+## Licencia
+
+[MIT](LICENSE). Este proyecto es independiente, sin afiliación con Carlinkit, HeWei, Google ni Android Auto; no incluye binarios ni código del fabricante.
