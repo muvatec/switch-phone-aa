@@ -1,0 +1,56 @@
+# Compose desplegado en Coolify (servicio Heimdall/infisical). Las variables SERVICE_* las genera Coolify;
+# no hay valores reales aqui. Ver docs/HANDOFF.md.
+services:
+  backend:
+    image: 'infisical/infisical:v0.154.6'
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - SERVICE_URL_BACKEND_8080
+      - NODE_ENV=production
+      - 'SITE_URL=${SITE_URL:-${SERVICE_URL_BACKEND}}'
+      - 'ENCRYPTION_KEY=${SERVICE_PASSWORD_ENCRYPTIONKEY}'
+      - 'AUTH_SECRET=${SERVICE_REALBASE64_64_AUTHSECRET}'
+      - 'DB_CONNECTION_URI=postgresql://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-infisical}'
+      - 'REDIS_URL=redis://redis:6379'
+      - TELEMETRY_ENABLED=false
+      - NODE_OPTIONS=--max-old-space-size=1024
+    mem_limit: 1536m
+    restart: unless-stopped
+
+  redis:
+    image: 'redis:7'
+    command: redis-server --maxmemory 64mb --maxmemory-policy noeviction --save 300 10
+    volumes:
+      - 'redis-data:/data'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 96m
+    restart: unless-stopped
+
+  db:
+    image: 'postgres:14-alpine'
+    command: postgres -c shared_buffers=64MB -c max_connections=30 -c work_mem=4MB -c effective_cache_size=256MB -c maintenance_work_mem=32MB
+    environment:
+      - 'POSTGRES_USER=${SERVICE_USER_POSTGRES}'
+      - 'POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}'
+      - 'POSTGRES_DB=${POSTGRES_DB:-infisical}'
+    volumes:
+      - 'pg-data:/var/lib/postgresql/data'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 256m
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  pg-data:
